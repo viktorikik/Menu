@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Умное меню · Календарь</title>
     <style>
-        /* ——— СБРОС И ШРИФТ ——— */
+        /* ——— СБРОС И ПЕРЕМЕННЫЕ ТЕМЫ ——— */
         * {
             margin: 0;
             padding: 0;
@@ -13,27 +13,71 @@
             font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
         }
 
+        :root {
+            --bg-primary: #f5f3f0;
+            --bg-app: rgba(255, 255, 255, 0.7);
+            --bg-app-border: rgba(255, 255, 255, 0.4);
+            --text-primary: #1c1c2a;
+            --text-secondary: #4a4a5a;
+            --text-muted: #6b6b7a;
+            --cell-bg: rgba(255, 255, 255, 0.5);
+            --cell-border: rgba(255, 255, 255, 0.7);
+            --tag-bg: white;
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            --btn-bg: #1e1e2a;
+            --btn-text: white;
+            --input-bg: rgba(255, 255, 255, 0.7);
+            --badge-bg: rgba(0, 0, 0, 0.05);
+            --empty-border: rgba(0, 0, 0, 0.05);
+            --planned-color: #6e7bff;
+            --done-color: #2bc48a;
+        }
+
+        /* ——— ТЁМНАЯ ТЕМА (АВТОМАТИЧЕСКИ) ——— */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-primary: #12121a;
+                --bg-app: rgba(30, 30, 42, 0.85);
+                --bg-app-border: rgba(255, 255, 255, 0.08);
+                --text-primary: #ececf0;
+                --text-secondary: #b8b8cc;
+                --text-muted: #8a8a9e;
+                --cell-bg: rgba(40, 40, 56, 0.6);
+                --cell-border: rgba(255, 255, 255, 0.06);
+                --tag-bg: rgba(50, 50, 70, 0.7);
+                --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+                --btn-bg: #3a3a52;
+                --btn-text: #f0f0f5;
+                --input-bg: rgba(50, 50, 70, 0.6);
+                --badge-bg: rgba(255, 255, 255, 0.06);
+                --empty-border: rgba(255, 255, 255, 0.04);
+                --planned-color: #8a97ff;
+                --done-color: #4ddb9a;
+            }
+        }
+
         body {
-            background: #f5f3f0;
+            background: var(--bg-primary);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             padding: 20px;
+            transition: background 0.3s ease;
         }
 
         /* ——— СТЕКЛЯННАЯ КАРТОЧКА ——— */
         .app {
-            max-width: 1000px;
+            max-width: 1100px;
             width: 100%;
-            background: rgba(255, 255, 255, 0.7);
+            background: var(--bg-app);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border-radius: 48px;
             padding: 32px 28px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            transition: all 0.2s ease;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--bg-app-border);
+            transition: all 0.3s ease;
         }
 
         /* ——— ШАПКА ——— */
@@ -50,7 +94,7 @@
             font-size: 26px;
             font-weight: 620;
             letter-spacing: -0.5px;
-            background: linear-gradient(145deg, #1e1e2a, #3a3a4a);
+            background: linear-gradient(145deg, var(--text-primary), var(--text-secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -58,18 +102,18 @@
 
         .logo span {
             font-size: 14px;
-            color: #6b6b7a;
-            background: rgba(0,0,0,0.04);
+            color: var(--text-muted);
+            background: var(--badge-bg);
             padding: 4px 14px;
             border-radius: 40px;
             margin-left: 12px;
-            -webkit-text-fill-color: #6b6b7a;
+            -webkit-text-fill-color: var(--text-muted);
         }
 
         .view-toggle {
             display: flex;
             gap: 6px;
-            background: rgba(0, 0, 0, 0.06);
+            background: rgba(128, 128, 140, 0.12);
             padding: 5px;
             border-radius: 60px;
         }
@@ -81,18 +125,18 @@
             border-radius: 40px;
             font-weight: 550;
             font-size: 14px;
-            color: #4a4a5a;
+            color: var(--text-secondary);
             cursor: pointer;
             transition: 0.2s;
         }
 
         .view-toggle button.active {
-            background: #ffffff;
+            background: var(--tag-bg);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            color: #1a1a2a;
+            color: var(--text-primary);
         }
 
-        /* ——— ГЛАВНАЯ КНОПКА "ЧТО ПРИГОТОВИТЬ?" ——— */
+        /* ——— ГЛАВНАЯ КНОПКА ——— */
         .smart-btn-wrap {
             display: flex;
             justify-content: center;
@@ -100,11 +144,11 @@
         }
 
         .what-cook-btn {
-            background: #1e1e2a;
+            background: var(--btn-bg);
             border: none;
             padding: 14px 42px;
             border-radius: 80px;
-            color: white;
+            color: var(--btn-text);
             font-size: 18px;
             font-weight: 580;
             letter-spacing: 0.3px;
@@ -114,13 +158,12 @@
             display: inline-flex;
             align-items: center;
             gap: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .what-cook-btn:hover {
             transform: scale(1.02);
-            background: #2a2a3a;
-            box-shadow: 0 20px 32px -10px rgba(0, 0, 0, 0.35);
+            filter: brightness(1.15);
         }
 
         .what-cook-btn:active {
@@ -137,12 +180,13 @@
             margin-left: 8px;
         }
 
-        /* ——— КАЛЕНДАРНАЯ СЕТКА ——— */
+        /* ——— КАЛЕНДАРЬ ——— */
         .calendar-wrap {
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(128, 128, 140, 0.06);
             border-radius: 32px;
             padding: 8px 8px 16px 8px;
             margin-bottom: 20px;
+            overflow-x: auto;
         }
 
         .weekdays {
@@ -150,11 +194,11 @@
             grid-template-columns: repeat(7, 1fr);
             text-align: center;
             font-weight: 500;
-            color: #5f5f72;
+            color: var(--text-muted);
             font-size: 13px;
             letter-spacing: 0.3px;
             padding: 14px 0 6px 0;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            border-bottom: 1px solid rgba(128, 128, 140, 0.08);
             margin-bottom: 8px;
         }
 
@@ -165,87 +209,84 @@
         }
 
         .day-cell {
-            background: rgba(255, 255, 255, 0.5);
+            background: var(--cell-bg);
             backdrop-filter: blur(4px);
             border-radius: 18px;
             padding: 10px 6px 10px 6px;
             min-height: 80px;
-            border: 1px solid rgba(255, 255, 255, 0.7);
+            border: 1px solid var(--cell-border);
             transition: 0.15s;
             display: flex;
             flex-direction: column;
-            cursor: default;
         }
 
         .day-cell.empty {
             background: transparent;
-            border: 1px dashed rgba(0, 0, 0, 0.05);
+            border: 1px dashed var(--empty-border);
             backdrop-filter: none;
+            min-height: 40px;
         }
 
         .day-number {
             font-weight: 550;
             font-size: 15px;
-            color: #1c1c2a;
+            color: var(--text-primary);
             margin-bottom: 6px;
             padding-left: 4px;
         }
 
         .day-meal {
-            background: rgba(30, 30, 42, 0.06);
+            background: rgba(128, 128, 140, 0.08);
             border-radius: 30px;
             padding: 4px 12px;
             font-size: 13px;
             font-weight: 470;
-            color: #1e1e2a;
+            color: var(--text-primary);
             margin: 3px 0;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            border-left: 3px solid #b8b0c8;
+            border-left: 3px solid var(--text-muted);
             transition: 0.1s;
         }
 
         .day-meal.planned {
-            border-left-color: #6e7bff;
-            background: rgba(110, 123, 255, 0.08);
+            border-left-color: var(--planned-color);
+            background: rgba(110, 123, 255, 0.1);
         }
 
         .day-meal.done {
-            border-left-color: #2bc48a;
+            border-left-color: var(--done-color);
             background: rgba(43, 196, 138, 0.1);
         }
 
         .day-meal .badge {
             font-size: 10px;
-            background: rgba(0,0,0,0.05);
+            background: var(--badge-bg);
             padding: 2px 8px;
             border-radius: 30px;
             margin-left: 6px;
-            color: #5a5a6e;
+            color: var(--text-muted);
         }
 
-        /* ——— МЕСЯЧНЫЙ ВИД (скрыт по умолчанию) ——— */
+        /* ——— ПЕРЕКЛЮЧЕНИЕ ВИДОВ ——— */
         .month-view {
             display: none;
         }
-
         .month-view.active {
             display: block;
         }
-
         .week-view.active {
             display: block;
         }
-
         .week-view {
             display: none;
         }
 
-        /* ——— БИБЛИОТЕКА / СПИСОК БЛЮД ——— */
+        /* ——— БИБЛИОТЕКА ——— */
         .dish-library {
             margin-top: 28px;
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(128, 128, 140, 0.05);
             border-radius: 28px;
             padding: 20px 20px 14px 20px;
             backdrop-filter: blur(4px);
@@ -254,7 +295,7 @@
         .dish-library h3 {
             font-weight: 540;
             font-size: 16px;
-            color: #34344a;
+            color: var(--text-primary);
             margin-bottom: 14px;
             letter-spacing: -0.2px;
         }
@@ -267,22 +308,23 @@
         }
 
         .dish-tag {
-            background: white;
+            background: var(--tag-bg);
             padding: 8px 16px;
             border-radius: 40px;
             font-size: 14px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-            border: 1px solid rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(128, 128, 140, 0.06);
             display: inline-flex;
             align-items: center;
             gap: 8px;
             transition: 0.1s;
+            color: var(--text-primary);
         }
 
         .dish-tag .remove-dish {
             background: none;
             border: none;
-            color: #b0b0c0;
+            color: var(--text-muted);
             cursor: pointer;
             font-size: 16px;
             line-height: 1;
@@ -305,49 +347,73 @@
             min-width: 160px;
             padding: 12px 18px;
             border-radius: 60px;
-            border: 1px solid rgba(0, 0, 0, 0.08);
-            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(128, 128, 140, 0.12);
+            background: var(--input-bg);
             font-size: 14px;
             outline: none;
             transition: 0.15s;
+            color: var(--text-primary);
+        }
+
+        .add-dish-form input::placeholder {
+            color: var(--text-muted);
         }
 
         .add-dish-form input:focus {
-            border-color: #6e7bff;
-            background: white;
+            border-color: var(--planned-color);
+            background: var(--tag-bg);
             box-shadow: 0 0 0 4px rgba(110, 123, 255, 0.1);
         }
 
         .add-dish-form select {
             padding: 12px 18px;
             border-radius: 60px;
-            border: 1px solid rgba(0, 0, 0, 0.08);
-            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(128, 128, 140, 0.12);
+            background: var(--input-bg);
             font-size: 14px;
             outline: none;
+            color: var(--text-primary);
+        }
+
+        .add-dish-form select option {
+            background: var(--bg-primary);
         }
 
         .add-dish-form button {
-            background: #1e1e2a;
+            background: var(--btn-bg);
             border: none;
             padding: 12px 28px;
             border-radius: 60px;
-            color: white;
+            color: var(--btn-text);
             font-weight: 550;
             cursor: pointer;
             transition: 0.15s;
         }
 
         .add-dish-form button:hover {
-            background: #2f2f42;
+            filter: brightness(1.15);
+        }
+
+        .hint {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 12px;
         }
 
         /* ——— АДАПТИВ ——— */
-        @media (max-width: 600px) {
+        @media (max-width: 700px) {
             .app { padding: 20px 16px; }
             .day-cell { min-height: 60px; padding: 6px 4px; }
             .day-meal { font-size: 11px; padding: 3px 8px; }
             .what-cook-btn { padding: 12px 24px; font-size: 16px; }
+            .day-number { font-size: 13px; }
+        }
+
+        @media (max-width: 500px) {
+            .header { flex-direction: column; align-items: stretch; }
+            .view-toggle { justify-content: center; }
+            .add-dish-form { flex-direction: column; }
+            .add-dish-form input { min-width: auto; }
         }
     </style>
 </head>
@@ -365,7 +431,7 @@
         </div>
     </div>
 
-    <!-- КНОПКА СУДЬБЫ -->
+    <!-- КНОПКА -->
     <div class="smart-btn-wrap">
         <button class="what-cook-btn" id="suggestBtn">
             🤔 Что приготовить?
@@ -389,7 +455,7 @@
         <div class="days-grid" id="monthGrid"></div>
     </div>
 
-    <!-- БИБЛИОТЕКА БЛЮД -->
+    <!-- БИБЛИОТЕКА -->
     <div class="dish-library">
         <h3>📚 Мои блюда (история + планы)</h3>
         <div class="dish-tags" id="dishTagsContainer"></div>
@@ -402,168 +468,175 @@
             </select>
             <button id="addDishBtn">➕ Добавить</button>
         </div>
-        <p style="font-size:12px; color:#8a8a9e; margin-top:12px;">* Добавь блюда, и календарь заполнится автоматически (по дням).</p>
+        <div class="hint">* Добавь блюдо — оно появится в календаре (сегодня или завтра).</div>
     </div>
 </div>
 
 <script>
-    // ——— ИНИЦИАЛИЗАЦИЯ ДАННЫХ ———
-    // Структура: массив объектов { id, name, status: 'planned' | 'done', date: '2026-08-24' }
-    // Для демки заполним историю + планы
-    let dishes = [];
-
-    // Функция для генерации дат (сегодня + прошлые дни)
+    // ——— ДАННЫЕ (твои блюда) ———
+    // Функция для дат
     function getDateOffset(offset) {
         const d = new Date();
         d.setDate(d.getDate() + offset);
         return d.toISOString().slice(0,10);
     }
 
-    // Предзаполнение демо-данными (чтобы сразу было красиво)
-    const demoDishes = [
-        { name: 'Плов', status: 'done', date: getDateOffset(-12) },
-        { name: 'Борщ', status: 'done', date: getDateOffset(-5) },
-        { name: 'Омлет', status: 'done', date: getDateOffset(-3) },
-        { name: 'Паста карбонара', status: 'done', date: getDateOffset(-1) },
-        { name: 'Курица с рисом', status: 'planned', date: getDateOffset(1) },
-        { name: 'Салат Цезарь', status: 'planned', date: getDateOffset(2) },
-        { name: 'Рыба на пару', status: 'planned', date: getDateOffset(4) },
-        { name: 'Тыквенный суп', status: 'done', date: getDateOffset(-9) },
-        { name: 'Домашняя пицца', status: 'done', date: getDateOffset(-18) },
+    // Твои блюда (факт + план)
+    const myDishes = [
+        // ——— ФАКТ (готовила) ———
+        { name: 'Гороховый суп', status: 'done', date: '2026-08-24' },
+        { name: 'Запеканка из фарша и овощей', status: 'done', date: '2026-08-25' },
+        { name: 'Колбаски и запеченая картошка', status: 'done', date: '2026-08-26' },
+
+        // ——— ПЛАН (конкретные даты) ———
+        { name: 'Плов', status: 'planned', date: '2026-08-28' },
+        { name: 'Салат с крабовыми палочками', status: 'planned', date: '2026-08-28' },
+        { name: 'Суп борщ?', status: 'planned', date: '2026-08-31' },
+        { name: 'Котлеты с картофельным пюре', status: 'planned', date: '2026-09-01' },
+        { name: 'Салат морковь по-корейски', status: 'planned', date: '2026-09-01' },
+        { name: 'Печень и перловка', status: 'planned', date: '2026-09-02' },
+        { name: 'Мясо по-французски', status: 'planned', date: '2026-09-03' },
+        { name: 'Морская капуста с крабовыми палочками', status: 'planned', date: '2026-09-04' },
+        { name: 'Суп с сайрой', status: 'planned', date: '2026-09-07' },
+        { name: 'Тушеная капуста', status: 'planned', date: '2026-09-08' },
+        { name: 'Запеченные куриные ножки', status: 'planned', date: '2026-09-09' },
+        { name: 'Фунчоза', status: 'planned', date: '2026-09-09' },
+        { name: 'Удон', status: 'planned', date: '2026-09-10' },
+        { name: 'Паста Болоньезе', status: 'planned', date: '2026-09-12' },
+
+        // ——— БЛЮДА БЕЗ ДАТЫ (пока просто в планах) ———
+        // Дадим им дату на будущее, чтобы они не потерялись, но пометим как "планы без даты"
+        // Для демо поставим их на +14 дней от сегодня
     ];
 
-    // Загружаем из localStorage или используем демо
-    const saved = localStorage.getItem('smartMenuDishes');
-    if (saved) {
-        try {
-            dishes = JSON.parse(saved);
-        } catch(e) {
-            dishes = demoDishes.map((d, i) => ({ ...d, id: Date.now() + i }));
+    // Добавим блюда "без даты" с плавающей датой (чтобы всегда были в будущем)
+    const futureDishes = [
+        'Салат с морской капустой и крабовым мясом',
+        'Гречка и салат из свежей капусты как в столовой',
+        'Суп-пюре из кабачков'
+    ];
+
+    // Загружаем из localStorage или создаём новые
+    let dishes = [];
+
+    function buildInitialDishes() {
+        const existing = localStorage.getItem('smartMenuDishes');
+        if (existing) {
+            try {
+                const parsed = JSON.parse(existing);
+                if (parsed.length > 0) return parsed;
+            } catch(e) {}
         }
-    } else {
-        dishes = demoDishes.map((d, i) => ({ ...d, id: Date.now() + i }));
+
+        // Создаём из myDishes
+        const result = myDishes.map((d, i) => ({ ...d, id: Date.now() + i }));
+
+        // Добавляем блюда без даты (на +14 дней от сегодня)
+        const today = new Date();
+        futureDishes.forEach((name, idx) => {
+            const d = new Date(today);
+            d.setDate(d.getDate() + 14 + idx);
+            result.push({
+                id: Date.now() + 1000 + idx,
+                name: name,
+                status: 'planned',
+                date: d.toISOString().slice(0,10)
+            });
+        });
+
+        return result;
     }
 
-    // Сохраняем в localStorage
+    dishes = buildInitialDishes();
+
     function saveDishes() {
         localStorage.setItem('smartMenuDishes', JSON.stringify(dishes));
     }
 
-    // ——— ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ———
-    function getWeekDays(baseDate = new Date()) {
-        const start = new Date(baseDate);
-        start.setDate(start.getDate() - start.getDay() + 1); // Понедельник
-        const week = [];
-        for (let i = 0; i < 7; i++) {
-            const d = new Date(start);
-            d.setDate(start.getDate() + i);
-            week.push(d);
-        }
-        return week;
-    }
-
-    function getMonthDays(year, month) {
-        const first = new Date(year, month, 1);
-        const last = new Date(year, month + 1, 0);
-        const days = [];
-        // Начинаем с понедельника (если первый день не понедельник — добавляем пустые)
-        const startDay = first.getDay() === 0 ? 6 : first.getDay() - 1; // 0=пн
-        const total = last.getDate();
-        for (let i = 0; i < startDay; i++) days.push(null);
-        for (let i = 1; i <= total; i++) {
-            days.push(new Date(year, month, i));
-        }
-        return days;
-    }
-
-    // Получить блюда для конкретной даты
+    // ——— РЕНДЕР КАЛЕНДАРЯ ———
     function getDishesForDate(dateStr) {
         return dishes.filter(d => d.date === dateStr);
     }
 
-    // Рендер недели
     function renderWeek() {
         const grid = document.getElementById('weekGrid');
         const today = new Date();
-        const week = getWeekDays(today);
+        // Начинаем с понедельника
+        const start = new Date(today);
+        start.setDate(start.getDate() - start.getDay() + 1);
         grid.innerHTML = '';
-        week.forEach(day => {
+        for (let i = 0; i < 7; i++) {
+            const d = new Date(start);
+            d.setDate(start.getDate() + i);
             const cell = document.createElement('div');
             cell.className = 'day-cell';
-            const dateStr = day.toISOString().slice(0,10);
-            const dayNum = day.getDate();
-            cell.innerHTML = `<div class="day-number">${dayNum}</div>`;
+            const dateStr = d.toISOString().slice(0,10);
+            cell.innerHTML = `<div class="day-number">${d.getDate()}</div>`;
             const dayDishes = getDishesForDate(dateStr);
-            dayDishes.forEach(d => {
+            dayDishes.forEach(dish => {
                 const mealDiv = document.createElement('div');
-                mealDiv.className = `day-meal ${d.status}`;
-                mealDiv.innerHTML = `${d.name} <span class="badge">${d.status === 'done' ? '✅' : '📅'}</span>`;
+                mealDiv.className = `day-meal ${dish.status}`;
+                const icon = dish.status === 'done' ? '✅' : '📅';
+                mealDiv.innerHTML = `${dish.name} <span class="badge">${icon}</span>`;
                 cell.appendChild(mealDiv);
             });
             grid.appendChild(cell);
-        });
+        }
     }
 
-    // Рендер месяца
     function renderMonth() {
         const grid = document.getElementById('monthGrid');
         const now = new Date();
         const year = now.getFullYear();
         const month = now.getMonth();
-        const days = getMonthDays(year, month);
+        const first = new Date(year, month, 1);
+        const last = new Date(year, month + 1, 0);
+        const totalDays = last.getDate();
+        // День недели первого дня (0 = воскресенье, нам нужно понедельник = 0)
+        let startDay = first.getDay() - 1;
+        if (startDay < 0) startDay = 6; // если воскресенье
+
         grid.innerHTML = '';
-        days.forEach(day => {
+        // Пустые ячейки до первого дня
+        for (let i = 0; i < startDay; i++) {
+            const empty = document.createElement('div');
+            empty.className = 'day-cell empty';
+            grid.appendChild(empty);
+        }
+
+        for (let day = 1; day <= totalDays; day++) {
+            const d = new Date(year, month, day);
             const cell = document.createElement('div');
             cell.className = 'day-cell';
-            if (!day) {
-                cell.classList.add('empty');
-                grid.appendChild(cell);
-                return;
-            }
-            const dateStr = day.toISOString().slice(0,10);
-            const dayNum = day.getDate();
-            cell.innerHTML = `<div class="day-number">${dayNum}</div>`;
+            const dateStr = d.toISOString().slice(0,10);
+            cell.innerHTML = `<div class="day-number">${day}</div>`;
             const dayDishes = getDishesForDate(dateStr);
-            dayDishes.forEach(d => {
+            dayDishes.forEach(dish => {
                 const mealDiv = document.createElement('div');
-                mealDiv.className = `day-meal ${d.status}`;
-                mealDiv.innerHTML = `${d.name} <span class="badge">${d.status === 'done' ? '✅' : '📅'}</span>`;
+                mealDiv.className = `day-meal ${dish.status}`;
+                const icon = dish.status === 'done' ? '✅' : '📅';
+                mealDiv.innerHTML = `${dish.name} <span class="badge">${icon}</span>`;
                 cell.appendChild(mealDiv);
             });
             grid.appendChild(cell);
-        });
+        }
     }
 
-    // ——— ОБНОВЛЕНИЕ ВСЕГО ИНТЕРФЕЙСА ———
-    function refreshUI() {
-        renderWeek();
-        renderMonth();
-        renderDishTags();
-        saveDishes();
-        updateSuggestionBadge(); // обновляем подсказку (не меняя текст кнопки)
-    }
-
-    // ——— ОТРИСОВКА ТЕГОВ БЛЮД ———
+    // ——— ТЕГИ БЛЮД ———
     function renderDishTags() {
         const container = document.getElementById('dishTagsContainer');
         container.innerHTML = '';
-        // Сортируем: сначала планы, потом история
-        const sorted = [...dishes].sort((a,b) => {
-            if (a.status === 'planned' && b.status === 'done') return -1;
-            if (a.status === 'done' && b.status === 'planned') return 1;
-            return 0;
-        });
+        const sorted = [...dishes].sort((a,b) => a.name.localeCompare(b.name));
         sorted.forEach(d => {
             const tag = document.createElement('span');
             tag.className = 'dish-tag';
-            const statusIcon = d.status === 'done' ? '✅' : '📅';
-            tag.innerHTML = `${statusIcon} ${d.name} <button class="remove-dish" data-id="${d.id}">✕</button>`;
+            const icon = d.status === 'done' ? '✅' : '📅';
+            tag.innerHTML = `${icon} ${d.name} <button class="remove-dish" data-id="${d.id}">✕</button>`;
             container.appendChild(tag);
         });
 
-        // Обработчики удаления
         document.querySelectorAll('.remove-dish').forEach(btn => {
-            btn.addEventListener('click', function(e) {
+            btn.addEventListener('click', function() {
                 const id = Number(this.dataset.id);
                 dishes = dishes.filter(d => d.id !== id);
                 refreshUI();
@@ -571,22 +644,19 @@
         });
     }
 
-    // ——— ГЛАВНАЯ ЛОГИКА: "ЧТО ПРИГОТОВИТЬ?" ———
+    // ——— ГЛАВНАЯ ФИЧА ———
     function suggestDish() {
-        // 1. Соберем все блюда, которые уже готовили (done)
         const doneDishes = dishes.filter(d => d.status === 'done');
-        // 2. Если нет истории — предложим новое из planned или вообще рандом
         if (doneDishes.length === 0) {
             const planned = dishes.filter(d => d.status === 'planned');
             if (planned.length > 0) {
                 const random = planned[Math.floor(Math.random() * planned.length)];
-                return { dish: random, reason: 'У тебя нет истории, но есть план! 😉' };
-            } else {
-                return { dish: null, reason: 'Добавь хоть одно блюдо в историю или план!' };
+                return { dish: random, reason: 'Нет истории, но есть план! 😉' };
             }
+            return { dish: null, reason: 'Добавь блюда в историю или план!' };
         }
 
-        // 3. Группируем по имени и считаем максимальную дату (последний раз готовили)
+        // Группируем по имени, ищем последнюю дату
         const lastCooked = {};
         doneDishes.forEach(d => {
             if (!lastCooked[d.name] || d.date > lastCooked[d.name]) {
@@ -594,7 +664,6 @@
             }
         });
 
-        // 4. Находим блюдо, которое готовили давнее всего (по дате)
         let oldestName = null;
         let oldestDate = null;
         for (const [name, date] of Object.entries(lastCooked)) {
@@ -604,42 +673,33 @@
             }
         }
 
-        // 5. Проверяем, есть ли это блюдо в планах (planned) на ближайшие дни? Если нет — предлагаем.
-        // Ищем в done блюдо с этим именем и самой старой датой
         const candidate = doneDishes.find(d => d.name === oldestName && d.date === oldestDate);
         if (candidate) {
-            // Подсчитаем, сколько дней прошло
             const today = new Date();
             const lastDate = new Date(candidate.date);
             const diffDays = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
-            let reason = `Ты не готовила "${candidate.name}" целых ${diffDays} дн. 👀`;
-            if (diffDays > 30) reason = `🔥 Давно не было "${candidate.name}" (${diffDays} дн.) — самое время!`;
-            else if (diffDays > 14) reason = `⏳ "${candidate.name}" ждал своего часа ${diffDays} дн.`;
-            else reason = `🥘 "${candidate.name}" — отличный вариант (${diffDays} дн. назад)`;
+            let reason = `Не готовила "${candidate.name}" ${diffDays} дн.`;
+            if (diffDays > 30) reason = `🔥 Давно не было "${candidate.name}" (${diffDays} дн.)!`;
+            else if (diffDays > 14) reason = `⏳ "${candidate.name}" ждал ${diffDays} дн.`;
+            else reason = `🥘 "${candidate.name}" — отличный вариант (${diffDays} дн.)`;
             return { dish: candidate, reason };
         }
 
-        // Если ничего не нашлось — рандом из всех
         const fallback = dishes[Math.floor(Math.random() * dishes.length)];
-        if (fallback) return { dish: fallback, reason: 'А давай попробуем что-то новое?' };
-        return { dish: null, reason: 'Добавь блюда, чтобы я могла советовать!' };
+        if (fallback) return { dish: fallback, reason: 'Попробуй что-то новенькое!' };
+        return { dish: null, reason: 'Добавь блюда!' };
     }
 
     function updateSuggestionBadge() {
         const result = suggestDish();
         const badge = document.getElementById('suggestionBadge');
-        if (result.dish) {
-            badge.textContent = `✨ ${result.dish.name}`;
-        } else {
-            badge.textContent = `⚡ ${result.reason}`;
-        }
+        badge.textContent = result.dish ? `✨ ${result.dish.name}` : '⚡ нет блюд';
     }
 
-    // Обработчик кнопки "Что приготовить?" (показывает alert с деталями)
     document.getElementById('suggestBtn').addEventListener('click', function() {
         const result = suggestDish();
         if (result.dish) {
-            alert(`🍽️ Предлагаю приготовить: ${result.dish.name}\n\n${result.reason}`);
+            alert(`🍽️ Предлагаю: ${result.dish.name}\n\n${result.reason}`);
         } else {
             alert(`❌ ${result.reason}`);
         }
@@ -654,30 +714,30 @@
             const view = this.dataset.view;
             document.getElementById('weekView').classList.toggle('active', view === 'week');
             document.getElementById('monthView').classList.toggle('active', view === 'month');
+            // Перерендерим месяц, если он стал активным (на всякий случай)
+            if (view === 'month') renderMonth();
         });
     });
 
-    // ——— ДОБАВЛЕНИЕ НОВОГО БЛЮДА ———
+    // ——— ДОБАВЛЕНИЕ ———
     document.getElementById('addDishBtn').addEventListener('click', function() {
         const input = document.getElementById('newDishInput');
         const statusSelect = document.getElementById('dishStatusSelect');
         const name = input.value.trim();
         if (!name) {
-            alert('Введите название блюда');
+            alert('Введи название блюда');
             return;
         }
-        // Проверка на дубликат (сегодня)
-        const today = new Date().toISOString().slice(0,10);
         const status = statusSelect.value;
-        // Если статус "done" — ставим сегодняшнюю дату, если planned — через 1 день (чтобы не путать)
-        let date = today;
+        const today = new Date();
+        let date = today.toISOString().slice(0,10);
         if (status === 'planned') {
-            const d = new Date();
+            const d = new Date(today);
             d.setDate(d.getDate() + 1);
             date = d.toISOString().slice(0,10);
         }
         dishes.push({
-            id: Date.now() + Math.random() * 1000,
+            id: Date.now() + Math.random() * 10000,
             name: name,
             status: status,
             date: date,
@@ -686,9 +746,17 @@
         refreshUI();
     });
 
+    // ——— ОБНОВЛЕНИЕ ВСЕГО ———
+    function refreshUI() {
+        renderWeek();
+        renderMonth();
+        renderDishTags();
+        saveDishes();
+        updateSuggestionBadge();
+    }
+
     // ——— СТАРТ ———
     refreshUI();
-    // По умолчанию показываем неделю
     document.getElementById('weekView').classList.add('active');
     document.getElementById('monthView').classList.remove('active');
 </script>
