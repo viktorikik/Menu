@@ -35,6 +35,8 @@
             --modal-overlay: rgba(0, 0, 0, 0.4);
             --modal-bg: white;
             --day-hover: rgba(0, 0, 0, 0.04);
+            --menu-item-bg: rgba(255, 255, 255, 0.3);
+            --modal-text: #1c1c2a;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -61,6 +63,8 @@
                 --modal-overlay: rgba(0, 0, 0, 0.7);
                 --modal-bg: #1e1e2e;
                 --day-hover: rgba(255, 255, 255, 0.05);
+                --menu-item-bg: rgba(40, 40, 56, 0.5);
+                --modal-text: #ececf0;
             }
         }
 
@@ -222,6 +226,8 @@
             border-radius: 28px;
             padding: 12px 8px 16px;
             margin-bottom: 16px;
+            touch-action: pan-y;
+            user-select: none;
         }
 
         .calendar-header {
@@ -406,7 +412,7 @@
         .modal-header h3 {
             font-size: 20px;
             font-weight: 600;
-            color: var(--text-primary);
+            color: var(--modal-text);
         }
 
         .modal-close {
@@ -431,6 +437,7 @@
             align-items: center;
             background: var(--cell-bg);
             border-left: 4px solid var(--text-muted);
+            color: var(--modal-text);
         }
 
         .modal-dish.done {
@@ -452,6 +459,65 @@
             text-align: center;
             padding: 30px 0;
             font-size: 15px;
+        }
+
+        /* ——— МЕНЮ (список под календарём) ——— */
+        .menu-list {
+            margin-top: 20px;
+            background: rgba(128, 128, 140, 0.04);
+            border-radius: 24px;
+            padding: 16px 18px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .menu-list h3 {
+            font-weight: 540;
+            font-size: 15px;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .menu-group {
+            margin-bottom: 12px;
+        }
+
+        .menu-date {
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .menu-item {
+            padding: 6px 12px;
+            border-radius: 12px;
+            background: var(--menu-item-bg);
+            margin-bottom: 4px;
+            font-size: 14px;
+            color: var(--text-primary);
+            display: flex;
+            justify-content: space-between;
+            border-left: 3px solid var(--text-muted);
+        }
+
+        .menu-item.done {
+            border-left-color: var(--done-color);
+        }
+        .menu-item.planned {
+            border-left-color: var(--planned-color);
+        }
+
+        .menu-item .status-badge {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .menu-empty {
+            color: var(--text-muted);
+            text-align: center;
+            padding: 20px 0;
+            font-size: 14px;
         }
 
         /* ——— БИБЛИОТЕКА ——— */
@@ -607,7 +673,7 @@
     </div>
 
     <!-- КАЛЕНДАРЬ -->
-    <div class="calendar-wrap">
+    <div class="calendar-wrap" id="calendarWrap">
         <div class="calendar-header">
             <button class="month-nav" id="prevMonth">‹</button>
             <h2 id="monthTitle">Август 2026</h2>
@@ -617,6 +683,12 @@
             <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div>
         </div>
         <div class="days-grid" id="calendarGrid"></div>
+    </div>
+
+    <!-- МЕНЮ (список) -->
+    <div class="menu-list" id="menuList">
+        <h3>📋 Меню на <span id="menuPeriod">месяц</span></h3>
+        <div id="menuContent"></div>
     </div>
 
     <!-- БИБЛИОТЕКА -->
@@ -670,14 +742,12 @@
         { name: 'Фунчоза', status: 'planned', date: '2026-09-09' },
         { name: 'Удон', status: 'planned', date: '2026-09-10' },
         { name: 'Паста Болоньезе', status: 'planned', date: '2026-09-12' },
-
-        // Без даты — поставим на +7 дней
     ];
 
     let dishes = [];
     let currentDate = new Date();
     let currentFilter = 'all';
-    let currentView = 'month';
+    let currentView = 'month'; // 'month' или 'week'
 
     function initDishes() {
         const saved = localStorage.getItem('smartMenuDishes_v2');
@@ -719,11 +789,29 @@
         localStorage.setItem('smartMenuDishes_v2', JSON.stringify(dishes));
     }
 
-    // ——— РЕНДЕР КАЛЕНДАРЯ ———
+    // ——— ВСПОМОГАТЕЛЬНЫЕ ———
     function getDishesForDate(dateStr) {
         return dishes.filter(d => d.date === dateStr);
     }
 
+    function formatDate(date) {
+        const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+        return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+    }
+
+    function getWeekDays(baseDate) {
+        const start = new Date(baseDate);
+        start.setDate(start.getDate() - start.getDay() + 1); // понедельник
+        const week = [];
+        for (let i = 0; i < 7; i++) {
+            const d = new Date(start);
+            d.setDate(start.getDate() + i);
+            week.push(d);
+        }
+        return week;
+    }
+
+    // ——— РЕНДЕР КАЛЕНДАРЯ ———
     function renderCalendar() {
         const grid = document.getElementById('calendarGrid');
         const year = currentDate.getFullYear();
@@ -732,66 +820,142 @@
         document.getElementById('monthTitle').textContent =
             `${['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'][month]} ${year}`;
 
-        const first = new Date(year, month, 1);
-        const last = new Date(year, month + 1, 0);
-        const totalDays = last.getDate();
-        let startDay = first.getDay() - 1;
-        if (startDay < 0) startDay = 6;
-
         grid.innerHTML = '';
 
-        // Пустые
-        for (let i = 0; i < startDay; i++) {
-            const empty = document.createElement('div');
-            empty.className = 'day-cell empty';
-            grid.appendChild(empty);
-        }
+        if (currentView === 'month') {
+            // Месяц
+            const first = new Date(year, month, 1);
+            const last = new Date(year, month + 1, 0);
+            const totalDays = last.getDate();
+            let startDay = first.getDay() - 1;
+            if (startDay < 0) startDay = 6;
 
-        const today = new Date();
-        const todayStr = today.toISOString().slice(0, 10);
-
-        for (let day = 1; day <= totalDays; day++) {
-            const d = new Date(year, month, day);
-            const dateStr = d.toISOString().slice(0, 10);
-            const cell = document.createElement('div');
-            cell.className = 'day-cell';
-
-            const dayDishes = getDishesForDate(dateStr);
-            const hasDone = dayDishes.some(d => d.status === 'done');
-            const hasPlanned = dayDishes.some(d => d.status === 'planned');
-
-            let show = true;
-            if (currentFilter === 'done' && !hasDone) show = false;
-            if (currentFilter === 'planned' && !hasPlanned) show = false;
-
-            if (!show && dayDishes.length === 0) {
-                cell.classList.add('empty');
-                cell.style.cursor = 'default';
-                cell.style.pointerEvents = 'none';
+            for (let i = 0; i < startDay; i++) {
+                const empty = document.createElement('div');
+                empty.className = 'day-cell empty';
+                grid.appendChild(empty);
             }
 
-            if (hasDone) cell.classList.add('has-done');
-            if (hasPlanned) cell.classList.add('has-planned');
-            if (hasDone && hasPlanned) cell.classList.add('has-both');
+            const today = new Date();
+            const todayStr = today.toISOString().slice(0, 10);
 
-            if (dateStr === todayStr) cell.classList.add('today');
-
-            // Точка-индикатор
-            let dot = '';
-            if (hasDone && hasPlanned) dot = '<span class="dot both-dot"></span>';
-            else if (hasDone) dot = '<span class="dot done-dot"></span>';
-            else if (hasPlanned) dot = '<span class="dot planned-dot"></span>';
-
-            cell.innerHTML = `<span class="day-number">${day}</span>${dot}`;
-
-            cell.addEventListener('click', () => {
-                if (dayDishes.length > 0 || show) {
-                    openModal(dateStr);
-                }
+            for (let day = 1; day <= totalDays; day++) {
+                const d = new Date(year, month, day);
+                const dateStr = d.toISOString().slice(0, 10);
+                const cell = createDayCell(d, dateStr, todayStr);
+                grid.appendChild(cell);
+            }
+        } else {
+            // Неделя
+            const week = getWeekDays(currentDate);
+            const today = new Date();
+            const todayStr = today.toISOString().slice(0, 10);
+            week.forEach(d => {
+                const dateStr = d.toISOString().slice(0, 10);
+                const cell = createDayCell(d, dateStr, todayStr);
+                grid.appendChild(cell);
             });
-
-            grid.appendChild(cell);
         }
+
+        updateMenu();
+    }
+
+    function createDayCell(date, dateStr, todayStr) {
+        const cell = document.createElement('div');
+        cell.className = 'day-cell';
+
+        const dayDishes = getDishesForDate(dateStr);
+        const hasDone = dayDishes.some(d => d.status === 'done');
+        const hasPlanned = dayDishes.some(d => d.status === 'planned');
+
+        let show = true;
+        if (currentFilter === 'done' && !hasDone) show = false;
+        if (currentFilter === 'planned' && !hasPlanned) show = false;
+
+        if (!show && dayDishes.length === 0) {
+            cell.classList.add('empty');
+            cell.style.cursor = 'default';
+            cell.style.pointerEvents = 'none';
+        }
+
+        if (hasDone) cell.classList.add('has-done');
+        if (hasPlanned) cell.classList.add('has-planned');
+        if (hasDone && hasPlanned) cell.classList.add('has-both');
+
+        if (dateStr === todayStr) cell.classList.add('today');
+
+        let dot = '';
+        if (hasDone && hasPlanned) dot = '<span class="dot both-dot"></span>';
+        else if (hasDone) dot = '<span class="dot done-dot"></span>';
+        else if (hasPlanned) dot = '<span class="dot planned-dot"></span>';
+
+        cell.innerHTML = `<span class="day-number">${date.getDate()}</span>${dot}`;
+
+        cell.addEventListener('click', () => {
+            if (dayDishes.length > 0 || show) {
+                openModal(dateStr);
+            }
+        });
+
+        return cell;
+    }
+
+    // ——— МЕНЮ (список) ———
+    function updateMenu() {
+        const container = document.getElementById('menuContent');
+        const periodLabel = document.getElementById('menuPeriod');
+        periodLabel.textContent = currentView === 'month' ? 'месяц' : 'неделя';
+
+        let days = [];
+        if (currentView === 'month') {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const first = new Date(year, month, 1);
+            const last = new Date(year, month + 1, 0);
+            for (let d = 1; d <= last.getDate(); d++) {
+                days.push(new Date(year, month, d));
+            }
+        } else {
+            days = getWeekDays(currentDate);
+        }
+
+        // Собираем все блюда за период, группируем по дате
+        const grouped = {};
+        days.forEach(day => {
+            const dateStr = day.toISOString().slice(0, 10);
+            const dayDishes = getDishesForDate(dateStr);
+            if (dayDishes.length > 0) {
+                grouped[dateStr] = dayDishes;
+            }
+        });
+
+        const sortedDates = Object.keys(grouped).sort();
+
+        if (sortedDates.length === 0) {
+            container.innerHTML = `<div class="menu-empty">😌 Нет блюд на этот период</div>`;
+            return;
+        }
+
+        let html = '';
+        sortedDates.forEach(dateStr => {
+            const d = new Date(dateStr);
+            const dayDishes = grouped[dateStr];
+            const displayDate = formatDate(d);
+            html += `<div class="menu-group">`;
+            html += `<div class="menu-date">${displayDate}</div>`;
+            dayDishes.forEach(dish => {
+                const statusLabel = dish.status === 'done' ? '✅' : '📅';
+                html += `
+                    <div class="menu-item ${dish.status}">
+                        <span>${dish.name}</span>
+                        <span class="status-badge">${statusLabel}</span>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        });
+
+        container.innerHTML = html;
     }
 
     // ——— МОДАЛКА ———
@@ -801,8 +965,7 @@
         const content = document.getElementById('modalContent');
 
         const d = new Date(dateStr);
-        const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
-        modalDate.textContent = `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+        modalDate.textContent = formatDate(d);
 
         const dayDishes = getDishesForDate(dateStr);
 
@@ -830,15 +993,49 @@
         }
     });
 
-    // ——— НАВИГАЦИЯ ПО МЕСЯЦАМ ———
-    document.getElementById('prevMonth').addEventListener('click', () => {
-        currentDate.setMonth(currentDate.getMonth() - 1);
+    // ——— НАВИГАЦИЯ ———
+    function changeMonth(delta) {
+        currentDate.setMonth(currentDate.getMonth() + delta);
         renderCalendar();
+    }
+
+    document.getElementById('prevMonth').addEventListener('click', () => changeMonth(-1));
+    document.getElementById('nextMonth').addEventListener('click', () => changeMonth(1));
+
+    // ——— СВАЙП ———
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const wrap = document.getElementById('calendarWrap');
+
+    wrap.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
     });
 
-    document.getElementById('nextMonth').addEventListener('click', () => {
-        currentDate.setMonth(currentDate.getMonth() + 1);
-        renderCalendar();
+    wrap.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        const diff = touchStartX - touchEndX;
+        if (Math.abs(diff) > 50) {
+            if (diff > 0) changeMonth(1);
+            else changeMonth(-1);
+        }
+    });
+
+    // Также добавим поддержку мыши для десктопа (drag)
+    let mouseDown = false;
+    let mouseStartX = 0;
+    wrap.addEventListener('mousedown', (e) => {
+        mouseDown = true;
+        mouseStartX = e.screenX;
+    });
+    window.addEventListener('mouseup', (e) => {
+        if (mouseDown) {
+            const diff = mouseStartX - e.screenX;
+            if (Math.abs(diff) > 50) {
+                if (diff > 0) changeMonth(1);
+                else changeMonth(-1);
+            }
+            mouseDown = false;
+        }
     });
 
     // ——— ПЕРЕКЛЮЧЕНИЕ ВИДОВ ———
@@ -847,7 +1044,6 @@
             document.querySelectorAll('#viewToggle button').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             currentView = this.dataset.view;
-            // Для простоты пока оставляем месяц, но можно сделать неделю
             renderCalendar();
         });
     });
