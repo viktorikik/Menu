@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>Умное меню · Календарь</title>
     <style>
         * {
@@ -30,13 +30,14 @@
             --empty-border: rgba(0, 0, 0, 0.05);
             --planned-color: #fbbf24;
             --done-color: #34d399;
+            --liked-color: #ef4444;
             --planned-bg: rgba(251, 191, 36, 0.15);
             --done-bg: rgba(52, 211, 153, 0.15);
             --modal-overlay: rgba(0, 0, 0, 0.4);
             --modal-bg: white;
             --day-hover: rgba(0, 0, 0, 0.04);
-            --menu-item-bg: rgba(255, 255, 255, 0.3);
             --modal-text: #1c1c2a;
+            --chip-bg: rgba(255, 255, 255, 0.7);
         }
 
         @media (prefers-color-scheme: dark) {
@@ -58,13 +59,14 @@
                 --empty-border: rgba(255, 255, 255, 0.03);
                 --planned-color: #fcd34d;
                 --done-color: #6ee7b7;
+                --liked-color: #f87171;
                 --planned-bg: rgba(252, 211, 77, 0.12);
                 --done-bg: rgba(110, 231, 183, 0.12);
                 --modal-overlay: rgba(0, 0, 0, 0.7);
                 --modal-bg: #1e1e2e;
                 --day-hover: rgba(255, 255, 255, 0.05);
-                --menu-item-bg: rgba(40, 40, 56, 0.5);
                 --modal-text: #ececf0;
+                --chip-bg: rgba(45, 45, 65, 0.7);
             }
         }
 
@@ -72,23 +74,24 @@
             background: var(--bg-primary);
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             min-height: 100vh;
-            padding: 16px;
+            padding: 12px;
             transition: background 0.3s;
         }
 
         .app {
-            max-width: 900px;
+            max-width: 960px;
             width: 100%;
             background: var(--bg-app);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border-radius: 40px;
-            padding: 28px 24px;
+            padding: 24px 20px;
             box-shadow: var(--shadow);
             border: 1px solid var(--bg-app-border);
             transition: all 0.3s;
+            margin: 0 auto;
         }
 
         .header {
@@ -97,7 +100,7 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 12px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
 
         .logo h1 {
@@ -122,14 +125,14 @@
 
         .controls {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
             align-items: center;
         }
 
         .view-toggle {
             display: flex;
-            gap: 4px;
+            gap: 3px;
             background: rgba(128, 128, 140, 0.1);
             padding: 4px;
             border-radius: 40px;
@@ -138,13 +141,14 @@
         .view-toggle button {
             border: none;
             background: transparent;
-            padding: 6px 18px;
+            padding: 6px 14px;
             border-radius: 30px;
             font-weight: 550;
             font-size: 13px;
             color: var(--text-secondary);
             cursor: pointer;
             transition: 0.2s;
+            white-space: nowrap;
         }
 
         .view-toggle button.active {
@@ -153,42 +157,18 @@
             color: var(--text-primary);
         }
 
-        .filter-toggle {
-            display: flex;
-            gap: 4px;
-            background: rgba(128, 128, 140, 0.1);
-            padding: 4px;
-            border-radius: 40px;
-        }
-
-        .filter-toggle button {
-            border: none;
-            background: transparent;
-            padding: 6px 14px;
-            border-radius: 30px;
-            font-weight: 500;
-            font-size: 12px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .filter-toggle button.active {
-            background: var(--tag-bg);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-            color: var(--text-primary);
-        }
-
         .smart-btn-wrap {
             display: flex;
             justify-content: center;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
         .what-cook-btn {
             background: var(--btn-bg);
             border: none;
-            padding: 12px 32px;
+            padding: 12px 28px;
             border-radius: 60px;
             color: var(--btn-text);
             font-size: 16px;
@@ -200,6 +180,7 @@
             align-items: center;
             gap: 10px;
             border: 1px solid rgba(255, 255, 255, 0.06);
+            width: auto;
         }
 
         .what-cook-btn:hover {
@@ -220,11 +201,33 @@
             color: #fbbf24;
         }
 
+        .favorites-btn {
+            background: transparent;
+            border: 1px solid var(--text-muted);
+            color: var(--text-primary);
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 14px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.2s;
+        }
+
+        .favorites-btn:hover {
+            background: var(--cell-bg);
+        }
+
+        .favorites-btn .heart {
+            color: var(--liked-color);
+        }
+
         /* ——— КАЛЕНДАРЬ ——— */
         .calendar-wrap {
             background: rgba(128, 128, 140, 0.04);
             border-radius: 28px;
-            padding: 12px 8px 16px;
+            padding: 10px 6px 14px;
             margin-bottom: 16px;
             touch-action: pan-y;
             user-select: none;
@@ -234,7 +237,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 12px 12px;
+            padding: 0 10px 10px;
         }
 
         .calendar-header h2 {
@@ -245,18 +248,19 @@
 
         .month-nav {
             display: flex;
-            gap: 8px;
+            gap: 6px;
         }
 
         .month-nav button {
             background: var(--cell-bg);
             border: 1px solid var(--cell-border);
             border-radius: 30px;
-            padding: 6px 16px;
+            padding: 4px 14px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 18px;
             color: var(--text-primary);
             transition: 0.15s;
+            line-height: 1.4;
         }
 
         .month-nav button:hover {
@@ -269,9 +273,9 @@
             text-align: center;
             font-weight: 500;
             color: var(--text-muted);
-            font-size: 12px;
-            letter-spacing: 0.5px;
-            padding: 8px 0 4px;
+            font-size: 11px;
+            letter-spacing: 0.3px;
+            padding: 6px 0 4px;
             text-transform: uppercase;
         }
 
@@ -282,25 +286,23 @@
         }
 
         .day-cell {
-            aspect-ratio: 1;
-            border-radius: 50%;
+            border-radius: 18px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             background: var(--cell-bg);
             border: 1px solid var(--cell-border);
             cursor: pointer;
             transition: 0.15s;
             position: relative;
-            min-height: 44px;
-            padding: 2px;
+            min-height: 60px;
+            padding: 6px 4px;
+            width: 100%;
         }
 
         .day-cell:hover {
-            transform: scale(1.05);
             background: var(--day-hover);
-            z-index: 2;
         }
 
         .day-cell.empty {
@@ -309,9 +311,7 @@
             cursor: default;
             pointer-events: none;
         }
-
         .day-cell.empty:hover {
-            transform: none;
             background: transparent;
         }
 
@@ -320,13 +320,13 @@
             font-size: 14px;
             color: var(--text-primary);
             line-height: 1;
+            margin-bottom: 4px;
         }
 
         .day-cell.has-done {
             background: var(--done-bg);
             border-color: var(--done-color);
         }
-
         .day-cell.has-done .day-number {
             color: var(--done-color);
         }
@@ -335,7 +335,6 @@
             background: var(--planned-bg);
             border-color: var(--planned-color);
         }
-
         .day-cell.has-planned .day-number {
             color: var(--planned-color);
         }
@@ -345,29 +344,61 @@
             border-color: var(--done-color);
         }
 
-        .day-cell .dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            margin-top: 2px;
-        }
-
-        .day-cell .dot.done-dot {
-            background: var(--done-color);
-        }
-
-        .day-cell .dot.planned-dot {
-            background: var(--planned-color);
-        }
-
-        .day-cell .dot.both-dot {
-            background: var(--done-color);
-            box-shadow: 4px 0 0 var(--planned-color);
-        }
-
         .day-cell.today {
             border-color: var(--text-primary);
             border-width: 2px;
+        }
+
+        /* ——— ЧИПСЫ БЛЮД В ЯЧЕЙКЕ (для недели) ——— */
+        .meal-chips {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            width: 100%;
+            max-height: 60px;
+            overflow: hidden;
+            transition: max-height 0.3s;
+        }
+
+        .meal-chip {
+            background: var(--chip-bg);
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 11px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            border-left: 2px solid var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-primary);
+            display: block;
+            width: 100%;
+            text-align: left;
+        }
+
+        .meal-chip.done {
+            border-left-color: var(--done-color);
+        }
+        .meal-chip.planned {
+            border-left-color: var(--planned-color);
+        }
+        .meal-chip.liked {
+            border-left-color: var(--liked-color);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .meal-chip.expanded {
+            font-size: 14px;
+            white-space: normal;
+            overflow: visible;
+            padding: 4px 10px;
+            background: var(--tag-bg);
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 5;
+            position: relative;
+            border-left-width: 4px;
         }
 
         /* ——— МОДАЛКА ——— */
@@ -393,10 +424,10 @@
         .modal {
             background: var(--modal-bg);
             border-radius: 32px;
-            padding: 32px 28px;
-            max-width: 420px;
+            padding: 28px 24px;
+            max-width: 440px;
             width: 100%;
-            max-height: 80vh;
+            max-height: 85vh;
             overflow-y: auto;
             box-shadow: 0 40px 80px rgba(0, 0, 0, 0.3);
             border: 1px solid var(--cell-border);
@@ -406,7 +437,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         .modal-header h3 {
@@ -422,8 +453,8 @@
             cursor: pointer;
             color: var(--text-muted);
             padding: 0 8px;
+            line-height: 1;
         }
-
         .modal-close:hover {
             color: var(--text-primary);
         }
@@ -438,20 +469,39 @@
             background: var(--cell-bg);
             border-left: 4px solid var(--text-muted);
             color: var(--modal-text);
+            font-size: 15px;
         }
 
         .modal-dish.done {
             border-left-color: var(--done-color);
         }
-
         .modal-dish.planned {
             border-left-color: var(--planned-color);
+        }
+        .modal-dish.liked {
+            border-left-color: var(--liked-color);
         }
 
         .modal-dish .dish-status {
             font-size: 12px;
             font-weight: 500;
             color: var(--text-muted);
+        }
+
+        .modal-dish .like-btn {
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            transition: 0.2s;
+            padding: 0 4px;
+            color: var(--text-muted);
+        }
+        .modal-dish .like-btn.liked {
+            color: var(--liked-color);
+        }
+        .modal-dish .like-btn:hover {
+            transform: scale(1.2);
         }
 
         .modal-empty {
@@ -461,90 +511,73 @@
             font-size: 15px;
         }
 
-        /* ——— МЕНЮ (список под календарём) ——— */
-        .menu-list {
-            margin-top: 20px;
+        /* ——— БЛОК ЛЮБИМЫХ (появляется по кнопке) ——— */
+        .favorites-section {
+            display: none;
+            margin-top: 16px;
             background: rgba(128, 128, 140, 0.04);
             border-radius: 24px;
-            padding: 16px 18px;
-            max-height: 300px;
-            overflow-y: auto;
+            padding: 14px 16px;
         }
 
-        .menu-list h3 {
+        .favorites-section.active {
+            display: block;
+        }
+
+        .favorites-section h3 {
             font-weight: 540;
             font-size: 15px;
             color: var(--text-primary);
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
-        .menu-group {
-            margin-bottom: 12px;
-        }
-
-        .menu-date {
-            font-weight: 600;
-            color: var(--text-secondary);
-            font-size: 14px;
-            margin-bottom: 4px;
-        }
-
-        .menu-item {
-            padding: 6px 12px;
-            border-radius: 12px;
-            background: var(--menu-item-bg);
-            margin-bottom: 4px;
-            font-size: 14px;
-            color: var(--text-primary);
+        .favorites-list {
             display: flex;
-            justify-content: space-between;
-            border-left: 3px solid var(--text-muted);
+            flex-wrap: wrap;
+            gap: 8px;
         }
 
-        .menu-item.done {
-            border-left-color: var(--done-color);
-        }
-        .menu-item.planned {
-            border-left-color: var(--planned-color);
+        .fav-item {
+            background: var(--tag-bg);
+            padding: 5px 14px;
+            border-radius: 30px;
+            font-size: 13px;
+            border: 1px solid var(--cell-border);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-primary);
         }
 
-        .menu-item .status-badge {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        .menu-empty {
-            color: var(--text-muted);
-            text-align: center;
-            padding: 20px 0;
-            font-size: 14px;
+        .fav-item .heart {
+            color: var(--liked-color);
         }
 
         /* ——— БИБЛИОТЕКА ——— */
         .dish-library {
-            margin-top: 20px;
+            margin-top: 18px;
             background: rgba(128, 128, 140, 0.04);
             border-radius: 24px;
-            padding: 16px 18px 14px;
+            padding: 14px 16px 12px;
         }
 
         .dish-library h3 {
             font-weight: 540;
             font-size: 15px;
             color: var(--text-primary);
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
         .dish-tags {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 12px;
+            gap: 6px;
+            margin-bottom: 10px;
         }
 
         .dish-tag {
             background: var(--tag-bg);
-            padding: 6px 14px;
+            padding: 5px 12px;
             border-radius: 30px;
             font-size: 13px;
             border: 1px solid rgba(128, 128, 140, 0.06);
@@ -562,65 +595,58 @@
             font-size: 14px;
             padding: 0 2px;
         }
-
         .dish-tag .remove-dish:hover {
             color: #e55a5a;
         }
 
         .add-dish-form {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             flex-wrap: wrap;
         }
 
-        .add-dish-form input {
-            flex: 2;
-            min-width: 140px;
-            padding: 10px 16px;
+        .add-dish-form input,
+        .add-dish-form select {
+            padding: 8px 14px;
             border-radius: 40px;
             border: 1px solid rgba(128, 128, 140, 0.12);
             background: var(--input-bg);
             font-size: 13px;
             outline: none;
             color: var(--text-primary);
+            flex: 1 1 auto;
+            min-width: 100px;
         }
 
         .add-dish-form input::placeholder {
             color: var(--text-muted);
         }
-
         .add-dish-form input:focus {
             border-color: var(--done-color);
             box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15);
         }
 
         .add-dish-form input[type="date"] {
-            flex: 1;
-            min-width: 120px;
+            flex: 0 1 140px;
+            min-width: 100px;
         }
 
         .add-dish-form select {
-            padding: 10px 14px;
-            border-radius: 40px;
-            border: 1px solid rgba(128, 128, 140, 0.12);
-            background: var(--input-bg);
-            font-size: 13px;
-            outline: none;
-            color: var(--text-primary);
+            flex: 0 1 120px;
         }
 
         .add-dish-form button {
             background: var(--btn-bg);
             border: none;
-            padding: 10px 22px;
+            padding: 8px 18px;
             border-radius: 40px;
             color: var(--btn-text);
             font-weight: 550;
             font-size: 13px;
             cursor: pointer;
             transition: 0.15s;
+            flex: 0 0 auto;
         }
-
         .add-dish-form button:hover {
             filter: brightness(1.12);
         }
@@ -628,18 +654,47 @@
         .hint {
             font-size: 11px;
             color: var(--text-muted);
-            margin-top: 10px;
+            margin-top: 8px;
         }
 
-        @media (max-width: 600px) {
+        /* ——— АДАПТИВ ——— */
+        @media (max-width: 700px) {
             .app { padding: 16px 12px; border-radius: 28px; }
-            .day-cell { min-height: 38px; }
-            .day-number { font-size: 12px; }
+            .day-cell { min-height: 50px; padding: 4px 2px; }
+            .day-number { font-size: 13px; }
             .header { flex-direction: column; align-items: stretch; }
             .controls { justify-content: center; flex-wrap: wrap; }
-            .modal { padding: 24px 18px; margin: 10px; }
-            .what-cook-btn { font-size: 14px; padding: 10px 20px; }
-            .logo h1 { font-size: 20px; }
+            .logo h1 { font-size: 22px; text-align: center; }
+            .logo span { display: inline-block; }
+            .what-cook-btn { font-size: 15px; padding: 10px 20px; }
+            .modal { padding: 20px 16px; }
+            .modal-header h3 { font-size: 18px; }
+            .modal-dish { font-size: 14px; padding: 10px 14px; }
+        }
+
+        @media (max-width: 480px) {
+            body { padding: 8px; }
+            .app { padding: 12px 8px; border-radius: 24px; }
+            .day-cell { min-height: 44px; border-radius: 14px; }
+            .day-number { font-size: 12px; }
+            .weekdays { font-size: 10px; }
+            .calendar-header h2 { font-size: 16px; }
+            .month-nav button { padding: 3px 12px; font-size: 16px; }
+            .controls .view-toggle button { font-size: 11px; padding: 4px 10px; }
+            .what-cook-btn { font-size: 14px; padding: 8px 16px; }
+            .suggestion-badge { font-size: 11px; padding: 3px 10px; }
+            .add-dish-form input,
+            .add-dish-form select { font-size: 12px; padding: 6px 10px; min-width: 70px; }
+            .add-dish-form button { font-size: 12px; padding: 6px 14px; }
+            .modal { padding: 16px 12px; border-radius: 24px; }
+            .modal-dish { font-size: 13px; padding: 8px 12px; }
+            .meal-chip { font-size: 10px; padding: 1px 6px; }
+            .meal-chip.expanded { font-size: 12px; padding: 3px 8px; }
+        }
+
+        @media (min-width: 1000px) {
+            .day-cell { min-height: 70px; padding: 8px 6px; }
+            .day-number { font-size: 16px; }
         }
     </style>
 </head>
@@ -652,11 +707,6 @@
             <h1>🍽️ Меню <span>умное</span></h1>
         </div>
         <div class="controls">
-            <div class="filter-toggle" id="filterToggle">
-                <button class="active" data-filter="all">Все</button>
-                <button data-filter="done">✅ Готовила</button>
-                <button data-filter="planned">📅 Планирую</button>
-            </div>
             <div class="view-toggle" id="viewToggle">
                 <button class="active" data-view="month">Месяц</button>
                 <button data-view="week">Неделя</button>
@@ -664,11 +714,14 @@
         </div>
     </div>
 
-    <!-- КНОПКА -->
+    <!-- КНОПКИ ДЕЙСТВИЙ -->
     <div class="smart-btn-wrap">
         <button class="what-cook-btn" id="suggestBtn">
             🤔 Что приготовить?
             <span class="suggestion-badge" id="suggestionBadge">⚡</span>
+        </button>
+        <button class="favorites-btn" id="favoritesToggle">
+            <span class="heart">❤️</span> Любимые
         </button>
     </div>
 
@@ -685,10 +738,10 @@
         <div class="days-grid" id="calendarGrid"></div>
     </div>
 
-    <!-- МЕНЮ (список) -->
-    <div class="menu-list" id="menuList">
-        <h3>📋 Меню на <span id="menuPeriod">месяц</span></h3>
-        <div id="menuContent"></div>
+    <!-- БЛОК ЛЮБИМЫХ (скрыт) -->
+    <div class="favorites-section" id="favoritesSection">
+        <h3>❤️ Любимые блюда</h3>
+        <div class="favorites-list" id="favoritesList"></div>
     </div>
 
     <!-- БИБЛИОТЕКА -->
@@ -722,12 +775,9 @@
 <script>
     // ——— ДАННЫЕ ———
     const MY_DISHES = [
-        // ФАКТ
         { name: 'Гороховый суп', status: 'done', date: '2026-08-24' },
         { name: 'Запеканка из фарша и овощей', status: 'done', date: '2026-08-25' },
         { name: 'Колбаски и запеченая картошка', status: 'done', date: '2026-08-26' },
-
-        // ПЛАН
         { name: 'Плов', status: 'planned', date: '2026-08-28' },
         { name: 'Салат с крабовыми палочками', status: 'planned', date: '2026-08-28' },
         { name: 'Суп борщ?', status: 'planned', date: '2026-08-31' },
@@ -746,11 +796,11 @@
 
     let dishes = [];
     let currentDate = new Date();
-    let currentFilter = 'all';
-    let currentView = 'month'; // 'month' или 'week'
+    let currentView = 'month';
+    let showFavorites = false;
 
     function initDishes() {
-        const saved = localStorage.getItem('smartMenuDishes_v2');
+        const saved = localStorage.getItem('smartMenuDishes_v3');
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
@@ -761,9 +811,8 @@
             } catch(e) {}
         }
 
-        const result = MY_DISHES.map((d, i) => ({ ...d, id: Date.now() + i }));
+        const result = MY_DISHES.map((d, i) => ({ ...d, id: Date.now() + i, liked: false }));
 
-        // Блюда без даты
         const noDate = [
             'Салат с морской капустой и крабовым мясом',
             'Гречка и салат из свежей капусты как в столовой',
@@ -777,7 +826,8 @@
                 id: Date.now() + 1000 + idx,
                 name: name,
                 status: 'planned',
-                date: d.toISOString().slice(0, 10)
+                date: d.toISOString().slice(0, 10),
+                liked: false
             });
         });
 
@@ -786,10 +836,9 @@
     }
 
     function saveDishes() {
-        localStorage.setItem('smartMenuDishes_v2', JSON.stringify(dishes));
+        localStorage.setItem('smartMenuDishes_v3', JSON.stringify(dishes));
     }
 
-    // ——— ВСПОМОГАТЕЛЬНЫЕ ———
     function getDishesForDate(dateStr) {
         return dishes.filter(d => d.date === dateStr);
     }
@@ -801,7 +850,7 @@
 
     function getWeekDays(baseDate) {
         const start = new Date(baseDate);
-        start.setDate(start.getDate() - start.getDay() + 1); // понедельник
+        start.setDate(start.getDate() - start.getDay() + 1);
         const week = [];
         for (let i = 0; i < 7; i++) {
             const d = new Date(start);
@@ -823,7 +872,6 @@
         grid.innerHTML = '';
 
         if (currentView === 'month') {
-            // Месяц
             const first = new Date(year, month, 1);
             const last = new Date(year, month + 1, 0);
             const totalDays = last.getDate();
@@ -857,7 +905,7 @@
             });
         }
 
-        updateMenu();
+        updateFavorites();
     }
 
     function createDayCell(date, dateStr, todayStr) {
@@ -868,94 +916,48 @@
         const hasDone = dayDishes.some(d => d.status === 'done');
         const hasPlanned = dayDishes.some(d => d.status === 'planned');
 
-        let show = true;
-        if (currentFilter === 'done' && !hasDone) show = false;
-        if (currentFilter === 'planned' && !hasPlanned) show = false;
-
-        if (!show && dayDishes.length === 0) {
-            cell.classList.add('empty');
-            cell.style.cursor = 'default';
-            cell.style.pointerEvents = 'none';
-        }
-
         if (hasDone) cell.classList.add('has-done');
         if (hasPlanned) cell.classList.add('has-planned');
         if (hasDone && hasPlanned) cell.classList.add('has-both');
 
         if (dateStr === todayStr) cell.classList.add('today');
 
-        let dot = '';
-        if (hasDone && hasPlanned) dot = '<span class="dot both-dot"></span>';
-        else if (hasDone) dot = '<span class="dot done-dot"></span>';
-        else if (hasPlanned) dot = '<span class="dot planned-dot"></span>';
+        // Номер дня
+        const numDiv = document.createElement('div');
+        numDiv.className = 'day-number';
+        numDiv.textContent = date.getDate();
+        cell.appendChild(numDiv);
 
-        cell.innerHTML = `<span class="day-number">${date.getDate()}</span>${dot}`;
+        // Если неделя — показываем чипсы с блюдами
+        if (currentView === 'week') {
+            const chipsContainer = document.createElement('div');
+            chipsContainer.className = 'meal-chips';
+            dayDishes.forEach(dish => {
+                const chip = document.createElement('span');
+                chip.className = `meal-chip ${dish.status}`;
+                if (dish.liked) chip.classList.add('liked');
+                chip.textContent = dish.name;
+                chip.title = dish.name;
 
+                // Клик по чипсу — расширяем/сворачиваем
+                chip.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    chip.classList.toggle('expanded');
+                });
+
+                chipsContainer.appendChild(chip);
+            });
+            cell.appendChild(chipsContainer);
+        }
+
+        // Клик по ячейке — открываем модалку (если есть блюда)
         cell.addEventListener('click', () => {
-            if (dayDishes.length > 0 || show) {
+            if (dayDishes.length > 0) {
                 openModal(dateStr);
             }
         });
 
         return cell;
-    }
-
-    // ——— МЕНЮ (список) ———
-    function updateMenu() {
-        const container = document.getElementById('menuContent');
-        const periodLabel = document.getElementById('menuPeriod');
-        periodLabel.textContent = currentView === 'month' ? 'месяц' : 'неделя';
-
-        let days = [];
-        if (currentView === 'month') {
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-            const first = new Date(year, month, 1);
-            const last = new Date(year, month + 1, 0);
-            for (let d = 1; d <= last.getDate(); d++) {
-                days.push(new Date(year, month, d));
-            }
-        } else {
-            days = getWeekDays(currentDate);
-        }
-
-        // Собираем все блюда за период, группируем по дате
-        const grouped = {};
-        days.forEach(day => {
-            const dateStr = day.toISOString().slice(0, 10);
-            const dayDishes = getDishesForDate(dateStr);
-            if (dayDishes.length > 0) {
-                grouped[dateStr] = dayDishes;
-            }
-        });
-
-        const sortedDates = Object.keys(grouped).sort();
-
-        if (sortedDates.length === 0) {
-            container.innerHTML = `<div class="menu-empty">😌 Нет блюд на этот период</div>`;
-            return;
-        }
-
-        let html = '';
-        sortedDates.forEach(dateStr => {
-            const d = new Date(dateStr);
-            const dayDishes = grouped[dateStr];
-            const displayDate = formatDate(d);
-            html += `<div class="menu-group">`;
-            html += `<div class="menu-date">${displayDate}</div>`;
-            dayDishes.forEach(dish => {
-                const statusLabel = dish.status === 'done' ? '✅' : '📅';
-                html += `
-                    <div class="menu-item ${dish.status}">
-                        <span>${dish.name}</span>
-                        <span class="status-badge">${statusLabel}</span>
-                    </div>
-                `;
-            });
-            html += `</div>`;
-        });
-
-        container.innerHTML = html;
     }
 
     // ——— МОДАЛКА ———
@@ -972,12 +974,31 @@
         if (dayDishes.length === 0) {
             content.innerHTML = `<div class="modal-empty">😌 На этот день ничего не запланировано</div>`;
         } else {
-            content.innerHTML = dayDishes.map(d => `
-                <div class="modal-dish ${d.status}">
-                    <span>${d.name}</span>
-                    <span class="dish-status">${d.status === 'done' ? '✅ Готовила' : '📅 Планирую'}</span>
+            content.innerHTML = dayDishes.map(dish => `
+                <div class="modal-dish ${dish.status} ${dish.liked ? 'liked' : ''}">
+                    <span>${dish.name}</span>
+                    <div>
+                        <span class="dish-status">${dish.status === 'done' ? '✅ Готовила' : '📅 Планирую'}</span>
+                        <button class="like-btn ${dish.liked ? 'liked' : ''}" data-id="${dish.id}">${dish.liked ? '❤️' : '🤍'}</button>
+                    </div>
                 </div>
             `).join('');
+
+            // Обработчики лайков
+            content.querySelectorAll('.like-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const id = Number(this.dataset.id);
+                    const dish = dishes.find(d => d.id === id);
+                    if (dish) {
+                        dish.liked = !dish.liked;
+                        saveDishes();
+                        renderCalendar(); // обновим календарь (и чипсы, и модалку)
+                        // переоткроем модалку, чтобы обновить её содержимое
+                        openModal(dateStr);
+                    }
+                });
+            });
         }
 
         overlay.classList.add('active');
@@ -994,13 +1015,17 @@
     });
 
     // ——— НАВИГАЦИЯ ———
-    function changeMonth(delta) {
-        currentDate.setMonth(currentDate.getMonth() + delta);
+    function changePeriod(delta) {
+        if (currentView === 'month') {
+            currentDate.setMonth(currentDate.getMonth() + delta);
+        } else {
+            currentDate.setDate(currentDate.getDate() + delta * 7);
+        }
         renderCalendar();
     }
 
-    document.getElementById('prevMonth').addEventListener('click', () => changeMonth(-1));
-    document.getElementById('nextMonth').addEventListener('click', () => changeMonth(1));
+    document.getElementById('prevMonth').addEventListener('click', () => changePeriod(-1));
+    document.getElementById('nextMonth').addEventListener('click', () => changePeriod(1));
 
     // ——— СВАЙП ———
     let touchStartX = 0;
@@ -1009,18 +1034,17 @@
 
     wrap.addEventListener('touchstart', (e) => {
         touchStartX = e.changedTouches[0].screenX;
-    });
+    }, { passive: true });
 
     wrap.addEventListener('touchend', (e) => {
         touchEndX = e.changedTouches[0].screenX;
         const diff = touchStartX - touchEndX;
         if (Math.abs(diff) > 50) {
-            if (diff > 0) changeMonth(1);
-            else changeMonth(-1);
+            changePeriod(diff > 0 ? 1 : -1);
         }
-    });
+    }, { passive: true });
 
-    // Также добавим поддержку мыши для десктопа (drag)
+    // Поддержка мыши (drag)
     let mouseDown = false;
     let mouseStartX = 0;
     wrap.addEventListener('mousedown', (e) => {
@@ -1031,8 +1055,7 @@
         if (mouseDown) {
             const diff = mouseStartX - e.screenX;
             if (Math.abs(diff) > 50) {
-                if (diff > 0) changeMonth(1);
-                else changeMonth(-1);
+                changePeriod(diff > 0 ? 1 : -1);
             }
             mouseDown = false;
         }
@@ -1048,15 +1071,27 @@
         });
     });
 
-    // ——— ФИЛЬТР ———
-    document.querySelectorAll('#filterToggle button').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('#filterToggle button').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            currentFilter = this.dataset.filter;
-            renderCalendar();
-        });
+    // ——— БЛОК ЛЮБИМЫХ ———
+    document.getElementById('favoritesToggle').addEventListener('click', function() {
+        showFavorites = !showFavorites;
+        const section = document.getElementById('favoritesSection');
+        section.classList.toggle('active', showFavorites);
+        if (showFavorites) updateFavorites();
     });
+
+    function updateFavorites() {
+        const container = document.getElementById('favoritesList');
+        const favs = dishes.filter(d => d.liked);
+        if (favs.length === 0) {
+            container.innerHTML = '<span style="color: var(--text-muted); font-size: 14px;">Нет любимых блюд</span>';
+        } else {
+            container.innerHTML = favs.map(d => `
+                <span class="fav-item">
+                    <span class="heart">❤️</span> ${d.name}
+                </span>
+            `).join('');
+        }
+    }
 
     // ——— БИБЛИОТЕКА ТЕГОВ ———
     function renderTags() {
@@ -1067,7 +1102,8 @@
             const tag = document.createElement('span');
             tag.className = 'dish-tag';
             const icon = d.status === 'done' ? '✅' : '📅';
-            tag.innerHTML = `${icon} ${d.name} <button class="remove-dish" data-id="${d.id}">✕</button>`;
+            const heart = d.liked ? '❤️' : '';
+            tag.innerHTML = `${icon} ${d.name} ${heart} <button class="remove-dish" data-id="${d.id}">✕</button>`;
             container.appendChild(tag);
         });
 
@@ -1079,6 +1115,7 @@
                 renderTags();
                 renderCalendar();
                 updateSuggestion();
+                updateFavorites();
             });
         });
     }
@@ -1167,6 +1204,7 @@
             name: name,
             status: statusSelect.value,
             date: date,
+            liked: false,
         });
 
         input.value = '';
@@ -1175,6 +1213,7 @@
         renderTags();
         renderCalendar();
         updateSuggestion();
+        updateFavorites();
     });
 
     // ——— СТАРТ ———
@@ -1182,8 +1221,8 @@
     renderCalendar();
     renderTags();
     updateSuggestion();
+    updateFavorites();
 
-    // Устанавливаем дату по умолчанию в инпут
     const defaultDate = new Date();
     defaultDate.setDate(defaultDate.getDate() + 1);
     document.getElementById('newDishDate').value = defaultDate.toISOString().slice(0, 10);
