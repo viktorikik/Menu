@@ -674,14 +674,13 @@
       border-radius: 16px;
       margin-bottom: 8px;
       display: flex;
-      justify-content: space-between;
+      flex-wrap: wrap;
       align-items: center;
       background: var(--cell-bg);
       border-left: 4px solid var(--text-muted);
       color: var(--modal-text);
       font-size: 15px;
       gap: 8px;
-      flex-wrap: wrap;
     }
     .modal-dish.done {
       border-left-color: var(--done-color);
@@ -702,6 +701,7 @@
       align-items: center;
       gap: 4px;
       flex-wrap: wrap;
+      margin-left: auto;
     }
     .modal-dish .dish-status {
       font-size: 12px;
@@ -747,6 +747,39 @@
       box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15);
     }
 
+    /* ===== Заметки ===== */
+    .dish-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      opacity: 0.7;
+      padding: 4px 0 2px 0;
+      border-top: 1px dashed var(--cell-border);
+      margin-top: 4px;
+      width: 100%;
+      word-break: break-word;
+      flex: 0 0 100%;
+    }
+    .edit-container {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      width: 100%;
+      flex: 0 0 100%;
+    }
+    .edit-container .edit-input {
+      width: 100%;
+      padding: 4px 8px;
+      border-radius: 8px;
+      border: 1px solid var(--cell-border);
+      background: var(--input-bg);
+      color: var(--text-primary);
+      font-size: 14px;
+    }
+    .edit-container .note-edit {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
     .modal-empty {
       color: var(--text-muted);
       text-align: center;
@@ -769,22 +802,23 @@
     .modal-add-new {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 14px;
+      gap: 8px 12px;
       align-items: center;
+      margin-bottom: 14px;
     }
     .modal-add-new input,
     .modal-add-new select {
-      padding: 8px 14px;
+      padding: 6px 12px;
       border-radius: 40px;
       border: 1px solid var(--cell-border);
       background: var(--input-bg);
-      font-size: 14px;
+      font-size: 13px;
       color: var(--text-primary);
       outline: none;
-      flex: 1 1 130px;
-      min-width: 90px;
-      max-width: 180px;
+      flex: 0 0 auto;
+      min-width: 80px;
+      max-width: 160px;
+      width: auto;
     }
     .modal-add-new input:focus,
     .modal-add-new select:focus {
@@ -794,11 +828,11 @@
     .modal-add-new button {
       background: var(--btn-bg);
       border: none;
-      padding: 8px 20px;
+      padding: 6px 18px;
       border-radius: 40px;
       color: var(--btn-text);
       font-weight: 550;
-      font-size: 14px;
+      font-size: 13px;
       cursor: pointer;
       transition: 0.15s;
       flex: 0 0 auto;
@@ -1067,12 +1101,17 @@
       .week-row .day-col { font-size: 12px; }
       .meal-chip { font-size: 12px; padding: 1px 8px; }
       .modal { padding: 20px 16px; max-width: 100%; }
-      .modal-add-new { flex-direction: column; align-items: stretch; }
+      .modal-add-new {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+      }
       .modal-add-new input,
       .modal-add-new select,
       .modal-add-new button {
-        max-width: 100%;
-        width: 100%;
+        max-width: 140px;
+        width: auto;
+        flex: 0 0 auto;
       }
       .rec-modal .modal { max-width: 100%; }
 
@@ -1133,6 +1172,16 @@
       .week-row .day-col { font-size: 11px; }
       .meal-chip { font-size: 11px; padding: 1px 6px; }
       .rec-modal .rec-item { font-size: 13px; padding: 6px 10px; }
+
+      .modal-add-new input,
+      .modal-add-new select,
+      .modal-add-new button {
+        max-width: 120px;
+        font-size: 12px;
+      }
+      .modal-add-new input {
+        min-width: 70px;
+      }
     }
 
     @media (min-width: 1000px) {
@@ -1232,6 +1281,10 @@
     <div class="form-group">
       <label for="newDishName">Название блюда</label>
       <input type="text" id="newDishName" placeholder="Например, Плов">
+    </div>
+    <div class="form-group">
+      <label for="newDishNote">Заметка (рецепт, продукты…)</label>
+      <input type="text" id="newDishNote" placeholder="Необязательно">
     </div>
     <div class="form-group">
       <label for="newDishDate">Дата</label>
@@ -1338,29 +1391,29 @@
   // 2. Хранилище данных (DishStore)
   // ============================================================
   const DishStore = (function() {
-    const STORAGE_KEY = 'smartMenuDishes_v4';
+    const STORAGE_KEY = 'smartMenuDishes_v5';
     let dishes = [];
     let cacheUnique = null;
     let cacheRecs = null;
 
     const DEFAULT_DISHES = [
-      { name: 'Гороховый суп', status: 'done', date: '2026-08-24', category: 'soup' },
-      { name: 'Запеканка из фарша и овощей', status: 'done', date: '2026-08-25', category: 'main' },
-      { name: 'Колбаски и запеченая картошка', status: 'done', date: '2026-08-26', category: 'main' },
-      { name: 'Плов', status: 'planned', date: '2026-08-28', category: 'main' },
-      { name: 'Салат с крабовыми палочками', status: 'planned', date: '2026-08-28', category: 'salad' },
-      { name: 'Суп борщ?', status: 'planned', date: '2026-08-31', category: 'soup' },
-      { name: 'Котлеты с картофельным пюре', status: 'planned', date: '2026-09-01', category: 'main' },
-      { name: 'Салат морковь по-корейски', status: 'planned', date: '2026-09-01', category: 'salad' },
-      { name: 'Печень и перловка', status: 'planned', date: '2026-09-02', category: 'main' },
-      { name: 'Мясо по-французски', status: 'planned', date: '2026-09-03', category: 'main' },
-      { name: 'Морская капуста с крабовыми палочками', status: 'planned', date: '2026-09-04', category: 'salad' },
-      { name: 'Суп с сайрой', status: 'planned', date: '2026-09-07', category: 'soup' },
-      { name: 'Тушеная капуста', status: 'planned', date: '2026-09-08', category: 'main' },
-      { name: 'Запеченные куриные ножки', status: 'planned', date: '2026-09-09', category: 'main' },
-      { name: 'Фунчоза', status: 'planned', date: '2026-09-09', category: 'main' },
-      { name: 'Удон', status: 'planned', date: '2026-09-10', category: 'main' },
-      { name: 'Паста Болоньезе', status: 'planned', date: '2026-09-12', category: 'main' },
+      { name: 'Гороховый суп', status: 'done', date: '2026-08-24', category: 'soup', note: '' },
+      { name: 'Запеканка из фарша и овощей', status: 'done', date: '2026-08-25', category: 'main', note: 'можно добавить сыр' },
+      { name: 'Колбаски и запеченая картошка', status: 'done', date: '2026-08-26', category: 'main', note: '' },
+      { name: 'Плов', status: 'planned', date: '2026-08-28', category: 'main', note: 'использовать баранину' },
+      { name: 'Салат с крабовыми палочками', status: 'planned', date: '2026-08-28', category: 'salad', note: '' },
+      { name: 'Суп борщ?', status: 'planned', date: '2026-08-31', category: 'soup', note: '' },
+      { name: 'Котлеты с картофельным пюре', status: 'planned', date: '2026-09-01', category: 'main', note: '' },
+      { name: 'Салат морковь по-корейски', status: 'planned', date: '2026-09-01', category: 'salad', note: '' },
+      { name: 'Печень и перловка', status: 'planned', date: '2026-09-02', category: 'main', note: '' },
+      { name: 'Мясо по-французски', status: 'planned', date: '2026-09-03', category: 'main', note: '' },
+      { name: 'Морская капуста с крабовыми палочками', status: 'planned', date: '2026-09-04', category: 'salad', note: '' },
+      { name: 'Суп с сайрой', status: 'planned', date: '2026-09-07', category: 'soup', note: '' },
+      { name: 'Тушеная капуста', status: 'planned', date: '2026-09-08', category: 'main', note: '' },
+      { name: 'Запеченные куриные ножки', status: 'planned', date: '2026-09-09', category: 'main', note: '' },
+      { name: 'Фунчоза', status: 'planned', date: '2026-09-09', category: 'main', note: '' },
+      { name: 'Удон', status: 'planned', date: '2026-09-10', category: 'main', note: '' },
+      { name: 'Паста Болоньезе', status: 'planned', date: '2026-09-12', category: 'main', note: 'сделать с фаршем индейки' },
     ];
 
     function generateId() {
@@ -1378,6 +1431,10 @@
             dishes.forEach(d => {
               if (!d.category) {
                 d.category = Utils.guessCategory(d.name);
+                needSave = true;
+              }
+              if (!d.note) {
+                d.note = '';
                 needSave = true;
               }
             });
@@ -1401,9 +1458,9 @@
       if (!load()) {
         const result = DEFAULT_DISHES.map((d, i) => ({ ...d, id: generateId() + i, liked: false }));
         const noDate = [
-          { name: 'Салат с морской капустой и крабовым мясом', category: 'salad' },
-          { name: 'Гречка и салат из свежей капусты как в столовой', category: 'main' },
-          { name: 'Суп-пюре из кабачков', category: 'soup' }
+          { name: 'Салат с морской капустой и крабовым мясом', category: 'salad', note: '' },
+          { name: 'Гречка и салат из свежей капусты как в столовой', category: 'main', note: '' },
+          { name: 'Суп-пюре из кабачков', category: 'soup', note: 'можно добавить сливки' }
         ];
         const today = new Date();
         noDate.forEach((item, idx) => {
@@ -1415,7 +1472,8 @@
             status: 'planned',
             date: Utils.formatDateLocal(d),
             category: item.category,
-            liked: false
+            liked: false,
+            note: item.note || ''
           });
         });
         dishes = result;
@@ -1431,13 +1489,21 @@
       return true;
     }
 
+    function updateNote(id, note) {
+      const dish = dishes.find(d => d.id === id);
+      if (!dish) return false;
+      dish.note = note.trim();
+      save();
+      return true;
+    }
+
     function getAll() { return dishes.slice(); }
     function getForDate(dateStr) { return dishes.filter(d => d.date === dateStr); }
 
-    function addDish(name, status, date, category, liked = false) {
+    function addDish(name, status, date, category, liked = false, note = '') {
       if (!name || !status || !date || !category) return false;
       const id = generateId();
-      dishes.push({ id, name, status, date, category, liked });
+      dishes.push({ id, name, status, date, category, liked, note });
       save();
       return true;
     }
@@ -1500,7 +1566,7 @@
     function invalidateCache() { cacheUnique = null; cacheRecs = null; }
 
     return {
-      init, editDishName, getAll, getForDate, addDish, removeDish,
+      init, editDishName, updateNote, getAll, getForDate, addDish, removeDish,
       toggleStatus, toggleLike, getUniqueWithLastDate, getRecommendations,
       getFavorites, invalidateCache
     };
@@ -1732,11 +1798,11 @@
           statusSpan.className = 'dish-status';
           statusSpan.textContent = dish.status === 'done' ? '✅ Готовила' : '📅 Планирую';
           actions.appendChild(statusSpan);
-          // Редактирование
+          // Редактирование (✎)
           const editBtn = document.createElement('button');
           editBtn.className = 'action-btn edit-btn';
           editBtn.textContent = '✎';
-          editBtn.title = 'Редактировать название';
+          editBtn.title = 'Редактировать название и заметку';
           editBtn.dataset.id = dish.id;
           editBtn.addEventListener('click', function(e) {
             e.stopPropagation();
@@ -1744,31 +1810,56 @@
             const parentDish = this.closest('.modal-dish');
             const nameSpanEl = parentDish.querySelector('.dish-name');
             const currentName = nameSpanEl.textContent;
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.value = currentName;
-            input.className = 'edit-input';
-            nameSpanEl.replaceWith(input);
-            input.focus();
-            input.select();
+            const noteDiv = parentDish.querySelector('.dish-note');
+            const currentNote = noteDiv ? noteDiv.textContent : '';
+
+            const editContainer = document.createElement('div');
+            editContainer.className = 'edit-container';
+
+            const nameInput = document.createElement('input');
+            nameInput.type = 'text';
+            nameInput.value = currentName;
+            nameInput.className = 'edit-input';
+            nameInput.placeholder = 'Название';
+
+            const noteInput = document.createElement('input');
+            noteInput.type = 'text';
+            noteInput.value = currentNote;
+            noteInput.className = 'edit-input note-edit';
+            noteInput.placeholder = 'Заметка (рецепт, продукты…)';
+
+            editContainer.appendChild(nameInput);
+            editContainer.appendChild(noteInput);
+
+            nameSpanEl.replaceWith(editContainer);
+            if (noteDiv) noteDiv.remove();
+
             const saveEdit = () => {
-              const newName = input.value.trim();
+              const newName = nameInput.value.trim();
+              const newNote = noteInput.value.trim();
               if (newName && newName !== currentName) {
                 DishStore.editDishName(id, newName);
-                openModal(dateStr);
-                renderCalendar(currentView, currentDate);
-              } else {
-                const restoredSpan = document.createElement('span');
-                restoredSpan.className = 'dish-name';
-                restoredSpan.textContent = currentName;
-                input.replaceWith(restoredSpan);
               }
+              if (newNote !== currentNote) {
+                DishStore.updateNote(id, newNote);
+              }
+              openModal(dateStr);
+              renderCalendar(currentView, currentDate);
             };
-            input.addEventListener('blur', saveEdit);
-            input.addEventListener('keydown', (e) => {
-              if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
-              if (e.key === 'Escape') { input.value = currentName; input.blur(); }
+
+            nameInput.addEventListener('blur', saveEdit);
+            noteInput.addEventListener('blur', saveEdit);
+            nameInput.addEventListener('keydown', (e) => {
+              if (e.key === 'Enter') { e.preventDefault(); nameInput.blur(); }
+              if (e.key === 'Escape') { nameInput.value = currentName; noteInput.value = currentNote; nameInput.blur(); }
             });
+            noteInput.addEventListener('keydown', (e) => {
+              if (e.key === 'Enter') { e.preventDefault(); noteInput.blur(); }
+              if (e.key === 'Escape') { nameInput.value = currentName; noteInput.value = currentNote; noteInput.blur(); }
+            });
+
+            nameInput.focus();
+            nameInput.select();
           });
           actions.appendChild(editBtn);
 
@@ -1814,6 +1905,15 @@
           actions.appendChild(deleteBtn);
 
           dishDiv.appendChild(actions);
+
+          // Отображение заметки, если есть
+          if (dish.note) {
+            const noteSpan = document.createElement('div');
+            noteSpan.className = 'dish-note';
+            noteSpan.textContent = dish.note;
+            dishDiv.appendChild(noteSpan);
+          }
+
           section.appendChild(dishDiv);
         });
       }
@@ -1834,6 +1934,12 @@
       nameInput.placeholder = 'Название';
       nameInput.id = 'modalNewDishName';
       addForm.appendChild(nameInput);
+
+      const noteInput = document.createElement('input');
+      noteInput.type = 'text';
+      noteInput.placeholder = '📝 Заметка (рецепт, продукты…)';
+      noteInput.id = 'modalNewDishNote';
+      addForm.appendChild(noteInput);
 
       const statusSelect = document.createElement('select');
       statusSelect.id = 'modalNewDishStatus';
@@ -1899,7 +2005,7 @@
             const name = this.dataset.name;
             const existing = DishStore.getAll().find(d => d.name === name);
             const category = existing ? existing.category : Utils.guessCategory(name);
-            DishStore.addDish(name, 'planned', dateStr, category, false);
+            DishStore.addDish(name, 'planned', dateStr, category, false, '');
             openModal(dateStr);
             renderCalendar(currentView, currentDate);
           });
@@ -1914,10 +2020,12 @@
         if (!name) { alert('Введи название блюда'); return; }
         const status = statusSelect.value;
         const category = categorySelect.value;
-        DishStore.addDish(name, status, dateStr, category, false);
+        const note = document.getElementById('modalNewDishNote').value.trim();
+        DishStore.addDish(name, status, dateStr, category, false, note);
         openModal(dateStr);
         renderCalendar(currentView, currentDate);
         nameInput.value = '';
+        document.getElementById('modalNewDishNote').value = '';
       });
 
       modalOverlay.classList.add('active');
@@ -1980,7 +2088,7 @@
             const dateStr = Utils.formatDateLocal(tomorrow);
             const existing = DishStore.getAll().find(d => d.name === name);
             const category = existing ? existing.category : Utils.guessCategory(name);
-            DishStore.addDish(name, 'planned', dateStr, category, false);
+            DishStore.addDish(name, 'planned', dateStr, category, false, '');
             recOverlay.classList.remove('active');
             alert(`✅ Блюдо "${name}" добавлено в план на завтра (${Utils.formatDate(tomorrow)})`);
             renderCalendar(currentView, currentDate);
@@ -2043,7 +2151,7 @@
             const dateStr = Utils.formatDateLocal(tomorrow);
             const existing = DishStore.getAll().find(d => d.name === name);
             const category = existing ? existing.category : Utils.guessCategory(name);
-            DishStore.addDish(name, 'planned', dateStr, category, false);
+            DishStore.addDish(name, 'planned', dateStr, category, false, '');
             recOverlay.classList.remove('active');
             alert(`✅ Блюдо "${name}" добавлено в план на завтра (${Utils.formatDate(tomorrow)})`);
             renderCalendar(currentView, currentDate);
@@ -2068,6 +2176,7 @@
       defaultDate.setDate(defaultDate.getDate() + 1);
       document.getElementById('newDishDate').value = Utils.formatDateLocal(defaultDate);
       document.getElementById('newDishName').value = '';
+      document.getElementById('newDishNote').value = '';
       document.getElementById('newDishStatus').value = 'planned';
       document.getElementById('newDishCategory').value = 'main';
       document.getElementById('addModalOverlay').classList.add('active');
@@ -2155,7 +2264,7 @@
       if (dish) {
         dish.date = targetDate;
         DishStore.invalidateCache();
-        localStorage.setItem('smartMenuDishes_v4', JSON.stringify(DishStore.getAll()));
+        localStorage.setItem('smartMenuDishes_v5', JSON.stringify(DishStore.getAll()));
         const view = Renderer.getCurrentView();
         const curDate = Renderer.getCurrentDate();
         Renderer.renderCalendar(view, curDate);
@@ -2246,6 +2355,7 @@
 
     document.getElementById('addModalSave').addEventListener('click', function() {
       const nameInput = document.getElementById('newDishName');
+      const noteInput = document.getElementById('newDishNote');
       const dateInput = document.getElementById('newDishDate');
       const statusSelect = document.getElementById('newDishStatus');
       const categorySelect = document.getElementById('newDishCategory');
@@ -2257,12 +2367,14 @@
         d.setDate(d.getDate() + 1);
         date = Utils.formatDateLocal(d);
       }
-      DishStore.addDish(name, statusSelect.value, date, categorySelect.value, false);
+      const note = noteInput.value.trim();
+      DishStore.addDish(name, statusSelect.value, date, categorySelect.value, false, note);
       Renderer.closeAddModal();
       const view = Renderer.getCurrentView();
       const curDate = Renderer.getCurrentDate();
       Renderer.renderCalendar(view, curDate);
       nameInput.value = '';
+      noteInput.value = '';
     });
 
     // Свайпы
@@ -2306,7 +2418,7 @@
       }
     });
 
-    console.log('✅ Все исправления применены: дата, переключатель месяца, категории вручную, компактные поля.');
+    console.log('✅ Готовый файл с заметками и компактными полями.');
   })();
 </script>
 </body>
