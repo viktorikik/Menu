@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>Меню · Календарь</title>
     <style>
-        /* Все стили без изменений (они были хорошие) */
+        /* Все стили без изменений — они были хорошие, но мы улучшаем навигацию */
         * {
             margin: 0;
             padding: 0;
@@ -246,6 +246,7 @@
             filter: brightness(1.08);
         }
 
+        /* ===== УЛУЧШЕННАЯ НАВИГАЦИЯ КАЛЕНДАРЯ ===== */
         .calendar-wrap {
             background: rgba(128, 128, 140, 0.04);
             border-radius: 28px;
@@ -268,12 +269,16 @@
             display: flex;
             align-items: center;
             gap: 6px;
+            flex-wrap: wrap;
         }
 
         .calendar-header h2 {
             font-size: 18px;
             font-weight: 560;
             color: var(--text-primary);
+            text-align: center;
+            flex: 1 1 auto;
+            min-width: 120px;
         }
 
         .month-nav {
@@ -285,30 +290,44 @@
             background: var(--cell-bg);
             border: 1px solid var(--cell-border);
             border-radius: 30px;
-            padding: 4px 14px;
+            padding: 8px 18px;
             cursor: pointer;
-            font-size: 18px;
+            font-size: 22px;
+            font-weight: 500;
             color: var(--text-primary);
             transition: 0.15s;
-            line-height: 1.4;
+            line-height: 1.2;
+            min-height: 44px;
+            min-width: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
         }
 
         .month-nav button:hover {
             background: var(--day-hover);
+            transform: scale(1.05);
+        }
+
+        .month-nav button:active {
+            transform: scale(0.93);
         }
 
         .today-btn {
             background: var(--done-color);
             border: none;
             border-radius: 30px;
-            padding: 4px 14px;
-            font-size: 13px;
-            font-weight: 550;
+            padding: 8px 20px;
+            font-size: 15px;
+            font-weight: 600;
             color: white;
             cursor: pointer;
             transition: 0.15s;
-            line-height: 1.4;
-            box-shadow: 0 2px 8px rgba(52, 211, 153, 0.25);
+            line-height: 1.2;
+            box-shadow: 0 2px 12px rgba(52, 211, 153, 0.3);
+            min-height: 44px;
+            white-space: nowrap;
         }
 
         .today-btn:hover {
@@ -316,6 +335,11 @@
             filter: brightness(1.08);
         }
 
+        .today-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Остальные стили без изменений (они уже хорошие) */
         .weekdays {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
@@ -1017,6 +1041,7 @@
             color: var(--text-primary);
         }
 
+        /* ===== АДАПТИВ ===== */
         @media (max-width: 700px) {
             .app { padding: 16px 12px; border-radius: 28px; }
             .day-cell { min-height: 50px; padding: 4px 2px; }
@@ -1042,9 +1067,33 @@
             .modal-add-new { flex-direction: column; }
             .modal-add-new input, .modal-add-new select, .modal-add-new button { width: 100%; }
             .rec-modal .modal { max-width: 100%; }
-            .calendar-header { flex-direction: column; align-items: stretch; }
-            .calendar-header .nav-group { justify-content: center; }
-            .today-btn { width: 100%; text-align: center; }
+
+            /* Улучшенная навигация на мобилках */
+            .calendar-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 6px;
+            }
+            .calendar-header .nav-group {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            .calendar-header h2 {
+                text-align: center;
+                order: 0;
+                width: 100%;
+            }
+            .month-nav button {
+                padding: 6px 14px;
+                font-size: 20px;
+                min-height: 40px;
+                min-width: 40px;
+            }
+            .today-btn {
+                padding: 6px 16px;
+                font-size: 14px;
+                min-height: 40px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -1054,7 +1103,8 @@
             .day-number { font-size: 12px; }
             .weekdays { font-size: 10px; }
             .calendar-header h2 { font-size: 16px; }
-            .month-nav button { padding: 3px 12px; font-size: 16px; }
+            .month-nav button { padding: 4px 12px; font-size: 18px; min-height: 36px; min-width: 36px; }
+            .today-btn { font-size: 13px; padding: 4px 14px; min-height: 36px; }
             .controls .view-toggle button { font-size: 11px; padding: 4px 10px; }
             .what-cook-btn { font-size: 14px; padding: 8px 16px; }
             .favorites-btn { font-size: 12px; padding: 6px 12px; }
@@ -1084,6 +1134,7 @@
 </head>
 <body>
 
+<!-- Разметка остаётся без изменений (она уже правильная) -->
 <div class="app">
     <div class="header">
         <div class="logo">
@@ -1106,8 +1157,10 @@
     <div class="calendar-wrap" id="calendarWrap">
         <div class="calendar-header">
             <div class="nav-group">
-                <button class="month-nav" id="prevMonth">‹</button>
-                <button class="month-nav" id="nextMonth">›</button>
+                <div class="month-nav">
+                    <button id="prevMonth">‹</button>
+                    <button id="nextMonth">›</button>
+                </div>
                 <button class="today-btn" id="todayBtn">Сегодня</button>
             </div>
             <h2 id="monthTitle">Август 2026</h2>
@@ -1189,10 +1242,9 @@
     const DishStore = (function() {
         const STORAGE_KEY = 'smartMenuDishes_v3';
         let dishes = [];
-        let cacheUnique = null;      // кеш уникальных блюд (последняя дата)
-        let cacheRecs = null;        // кеш рекомендаций
+        let cacheUnique = null;
+        let cacheRecs = null;
 
-        // Начальные данные (fallback)
         const DEFAULT_DISHES = [
             { name: 'Гороховый суп', status: 'done', date: '2026-08-24' },
             { name: 'Запеканка из фарша и овощей', status: 'done', date: '2026-08-25' },
@@ -1236,25 +1288,20 @@
         function save() {
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(dishes));
-                // После сохранения сбрасываем кеши
                 cacheUnique = null;
                 cacheRecs = null;
             } catch (e) {
                 console.error('Ошибка сохранения данных:', e);
-                // Можно показать уведомление пользователю
             }
         }
 
         function init() {
             if (!load()) {
-                // Если не загрузилось, создаем начальные данные
                 const result = DEFAULT_DISHES.map((d, i) => ({
                     ...d,
                     id: generateId() + i,
                     liked: false
                 }));
-
-                // Добавляем несколько блюд без даты (для примера)
                 const noDate = [
                     'Салат с морской капустой и крабовым мясом',
                     'Гречка и салат из свежей капусты как в столовой',
@@ -1272,7 +1319,6 @@
                         liked: false
                     });
                 });
-
                 dishes = result;
                 save();
             }
@@ -1280,10 +1326,8 @@
             cacheRecs = null;
         }
 
-        // --- Публичные методы ---
-
         function getAll() {
-            return dishes.slice(); // возвращаем копию
+            return dishes.slice();
         }
 
         function getForDate(dateStr) {
@@ -1322,7 +1366,6 @@
             return true;
         }
 
-        // Получить уникальные блюда с последней датой (кешируется)
         function getUniqueWithLastDate() {
             if (cacheUnique) return cacheUnique;
             const map = {};
@@ -1337,7 +1380,6 @@
             return result;
         }
 
-        // Получить рекомендации (кешируется)
         function getRecommendations() {
             if (cacheRecs) return cacheRecs;
             const doneDishes = dishes.filter(d => d.status === 'done');
@@ -1356,13 +1398,11 @@
             return result;
         }
 
-        // Сброс кеша (например, после внешних изменений)
         function invalidateCache() {
             cacheUnique = null;
             cacheRecs = null;
         }
 
-        // Получить список любимых (все)
         function getFavorites() {
             return dishes.filter(d => d.liked);
         }
@@ -1386,7 +1426,6 @@
     // 2. Утилиты (форматирование, категории, безопасность)
     // ============================================================
     const Utils = {
-        // Безопасное экранирование для вставки в HTML (если используем innerHTML)
         escapeHtml(str) {
             if (!str) return '';
             const div = document.createElement('div');
@@ -1443,7 +1482,6 @@
             return week;
         },
 
-        // Создание элемента с текстовым содержимым (без innerHTML)
         createElement(tag, className = '', text = '') {
             const el = document.createElement(tag);
             if (className) el.className = className;
@@ -1456,12 +1494,10 @@
     // 3. Модуль рендеринга (Renderer) – создание DOM-элементов
     // ============================================================
     const Renderer = (function() {
-        // Кеш для текущих view, чтобы не перерисовывать всё
         let currentView = 'month';
         let currentDate = new Date();
         let currentDateStr = currentDate.toISOString().slice(0, 10);
 
-        // DOM-ссылки
         const monthTitle = document.getElementById('monthTitle');
         const calendarContent = document.getElementById('calendarContent');
         const menuContent = document.getElementById('menuContent');
@@ -1473,7 +1509,6 @@
         const recTitle = document.getElementById('recTitle');
         const recContent = document.getElementById('recContent');
 
-        // --- Рендер календаря ---
         function renderCalendar(view, date) {
             currentView = view;
             currentDate = date;
@@ -1503,7 +1538,6 @@
             let startDay = first.getDay() - 1;
             if (startDay < 0) startDay = 6;
 
-            // Пустые ячейки
             for (let i = 0; i < startDay; i++) {
                 const empty = document.createElement('div');
                 empty.className = 'day-cell empty';
@@ -1601,7 +1635,6 @@
             calendarContent.appendChild(list);
         }
 
-        // --- Рендер текстового меню ---
         function renderMenu() {
             const view = currentView;
             menuPeriod.textContent = view === 'month' ? 'месяц' : 'неделю';
@@ -1677,15 +1710,13 @@
             });
         }
 
-        // --- Модалка дня ---
         function openModal(dateStr) {
             const d = new Date(dateStr);
             modalDate.textContent = Utils.formatDate(d);
 
             const dayDishes = DishStore.getForDate(dateStr);
-            modalContent.innerHTML = ''; // очищаем
+            modalContent.innerHTML = '';
 
-            // Блок "Меню на день"
             const section = document.createElement('div');
             section.className = 'day-meals-section';
 
@@ -1717,7 +1748,6 @@
                     statusSpan.textContent = dish.status === 'done' ? '✅ Готовила' : '📅 Планирую';
                     actions.appendChild(statusSpan);
 
-                    // Кнопка лайка
                     const likeBtn = document.createElement('button');
                     likeBtn.className = `action-btn like-btn ${dish.liked ? 'liked' : ''}`;
                     likeBtn.textContent = dish.liked ? '❤️' : '🤍';
@@ -1727,12 +1757,10 @@
                         e.stopPropagation();
                         const id = Number(this.dataset.id);
                         DishStore.toggleLike(id);
-                        // Переоткрыть модалку
                         openModal(dateStr);
                     });
                     actions.appendChild(likeBtn);
 
-                    // Кнопка переключения статуса
                     const toggleBtn = document.createElement('button');
                     toggleBtn.className = 'action-btn toggle-status-btn';
                     toggleBtn.textContent = '🔄';
@@ -1746,7 +1774,6 @@
                     });
                     actions.appendChild(toggleBtn);
 
-                    // Кнопка удаления
                     const deleteBtn = document.createElement('button');
                     deleteBtn.className = 'action-btn delete-btn';
                     deleteBtn.textContent = '🗑️';
@@ -1768,7 +1795,6 @@
             }
             modalContent.appendChild(section);
 
-            // Блок добавления
             const addSection = document.createElement('div');
             addSection.className = 'modal-add-section';
 
@@ -1802,7 +1828,6 @@
             addForm.appendChild(addBtn);
             addSection.appendChild(addForm);
 
-            // Список предложений
             const suggestTitle = document.createElement('h4');
             suggestTitle.textContent = '📖 Выбрать из меню';
             suggestTitle.style.marginTop = '12px';
@@ -1849,7 +1874,6 @@
             addSection.appendChild(suggestList);
             modalContent.appendChild(addSection);
 
-            // Обработчик для кнопки добавления
             addBtn.addEventListener('click', function() {
                 const name = nameInput.value.trim();
                 if (!name) {
@@ -1869,7 +1893,6 @@
             modalOverlay.classList.remove('active');
         }
 
-        // --- Модалка рекомендаций / любимых ---
         function openRecommendations() {
             recTitle.textContent = '🍽️ Рекомендации';
             const { liked, others } = DishStore.getRecommendations();
@@ -1924,7 +1947,6 @@
                     removeBtn.title = 'Убрать из любимых';
                     row.appendChild(removeBtn);
 
-                    // Клик по строке (кроме кнопки) – добавить на завтра
                     row.addEventListener('click', function(e) {
                         if (e.target === removeBtn) return;
                         const name = this.dataset.name;
@@ -1936,14 +1958,13 @@
                         alert(`✅ Блюдо "${name}" добавлено в план на завтра (${Utils.formatDate(tomorrow)})`);
                     });
 
-                    // Кнопка удаления из любимых
                     removeBtn.addEventListener('click', function(e) {
                         e.stopPropagation();
                         const id = Number(this.closest('.rec-item').dataset.id);
                         const dish = DishStore.getAll().find(d => d.id === id);
                         if (dish) {
                             DishStore.toggleLike(id);
-                            openFavorites(); // обновить
+                            openFavorites();
                         }
                     });
 
@@ -2044,7 +2065,6 @@
             recContent.appendChild(hintDiv);
         }
 
-        // --- Глобальное добавление ---
         function openAddModal() {
             const defaultDate = new Date();
             defaultDate.setDate(defaultDate.getDate() + 1);
@@ -2079,18 +2099,13 @@
     // 4. Инициализация событий и приложения
     // ============================================================
     (function init() {
-        // Инициализация данных
         DishStore.init();
 
-        // Установка начальных параметров
         const now = new Date();
         Renderer.setCurrentDate(now);
         Renderer.setCurrentView('month');
-
-        // Первый рендер
         Renderer.renderCalendar('month', now);
 
-        // --- Обработчики навигации ---
         document.getElementById('prevMonth').addEventListener('click', function() {
             const curDate = Renderer.getCurrentDate();
             const view = Renderer.getCurrentView();
@@ -2124,7 +2139,6 @@
             Renderer.renderCalendar(view, now);
         });
 
-        // --- Переключение видов ---
         document.querySelectorAll('#viewToggle button').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('#viewToggle button').forEach(b => b.classList.remove('active'));
@@ -2136,19 +2150,16 @@
             });
         });
 
-        // --- Модалка дня ---
         document.getElementById('modalClose').addEventListener('click', Renderer.closeModal);
         document.getElementById('modalOverlay').addEventListener('click', function(e) {
             if (e.target === this) Renderer.closeModal();
         });
 
-        // --- Модалка рекомендаций ---
         document.getElementById('recClose').addEventListener('click', Renderer.closeRecModal);
         document.getElementById('recOverlay').addEventListener('click', function(e) {
             if (e.target === this) Renderer.closeRecModal();
         });
 
-        // --- Кнопка "Что приготовить?" ---
         document.getElementById('suggestBtn').addEventListener('click', function() {
             document.getElementById('choiceOverlay').classList.add('active');
         });
@@ -2170,10 +2181,8 @@
             alert('✨ Функция «На твой вкус» будет доступна после загрузки ваших любимых блюд.\nЗагрузите их позже в разделе «Любимые».');
         });
 
-        // --- Любимые ---
         document.getElementById('favoritesBtn').addEventListener('click', Renderer.openFavorites);
 
-        // --- Глобальное добавление ---
         document.getElementById('addDishBtn').addEventListener('click', Renderer.openAddModal);
 
         document.getElementById('addModalClose').addEventListener('click', Renderer.closeAddModal);
@@ -2205,7 +2214,6 @@
             nameInput.value = '';
         });
 
-        // --- Свайпы ---
         let touchStartX = 0;
         let touchEndX = 0;
         const wrap = document.getElementById('calendarWrap');
@@ -2231,7 +2239,6 @@
             }
         }, { passive: true });
 
-        // Поддержка мыши (drag)
         let mouseDown = false;
         let mouseStartX = 0;
         wrap.addEventListener('mousedown', (e) => {
@@ -2257,7 +2264,7 @@
             }
         });
 
-        console.log('Приложение инициализировано. Все данные защищены от XSS.');
+        console.log('Приложение инициализировано. Навигация улучшена.');
     })();
 </script>
 </body>
