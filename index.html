@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>Умное меню · Календарь</title>
+    <title>Меню · Календарь</title>
     <style>
         * {
             margin: 0;
@@ -42,6 +42,9 @@
             --menu-item-bg: rgba(255, 255, 255, 0.3);
             --suggest-item-bg: rgba(128, 128, 140, 0.06);
             --rec-item-bg: rgba(128, 128, 140, 0.06);
+            --color-soup: #fbbf24;
+            --color-salad: #34d399;
+            --color-main: #ef4444;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -75,6 +78,9 @@
                 --menu-item-bg: rgba(40, 40, 56, 0.5);
                 --suggest-item-bg: rgba(60, 60, 80, 0.4);
                 --rec-item-bg: rgba(60, 60, 80, 0.4);
+                --color-soup: #fbbf24;
+                --color-salad: #34d399;
+                --color-main: #f87171;
             }
         }
 
@@ -115,20 +121,17 @@
             font-size: 24px;
             font-weight: 620;
             letter-spacing: -0.3px;
-            background: linear-gradient(145deg, var(--text-primary), var(--text-secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--text-primary);
         }
 
-        .logo span {
+        .logo h1 span {
             font-size: 13px;
             color: var(--text-muted);
             background: var(--badge-bg);
             padding: 3px 12px;
             border-radius: 40px;
             margin-left: 8px;
-            -webkit-text-fill-color: var(--text-muted);
+            font-weight: 400;
         }
 
         .controls {
@@ -257,6 +260,14 @@
             justify-content: space-between;
             align-items: center;
             padding: 0 10px 10px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .calendar-header .nav-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .calendar-header h2 {
@@ -284,6 +295,25 @@
 
         .month-nav button:hover {
             background: var(--day-hover);
+        }
+
+        .today-btn {
+            background: var(--done-color);
+            border: none;
+            border-radius: 30px;
+            padding: 4px 14px;
+            font-size: 13px;
+            font-weight: 550;
+            color: white;
+            cursor: pointer;
+            transition: 0.15s;
+            line-height: 1.4;
+            box-shadow: 0 2px 8px rgba(52, 211, 153, 0.25);
+        }
+
+        .today-btn:hover {
+            transform: scale(1.05);
+            filter: brightness(1.08);
         }
 
         .weekdays {
@@ -487,6 +517,16 @@
             border-left-color: var(--planned-color);
         }
 
+        .menu-item.category-soup {
+            border-left-color: var(--color-soup);
+        }
+        .menu-item.category-salad {
+            border-left-color: var(--color-salad);
+        }
+        .menu-item.category-main {
+            border-left-color: var(--color-main);
+        }
+
         .menu-item .status-badge {
             font-size: 12px;
             color: var(--text-muted);
@@ -555,6 +595,23 @@
         }
         .modal-close:hover {
             color: var(--text-primary);
+        }
+
+        /* ——— БЛОК ДНЯ: список блюд ——— */
+        .day-meals-section {
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--cell-border);
+            padding-bottom: 16px;
+        }
+
+        .day-meals-section h4 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .modal-dish {
@@ -627,14 +684,13 @@
         .modal-empty {
             color: var(--text-muted);
             text-align: center;
-            padding: 30px 0;
+            padding: 20px 0;
             font-size: 15px;
         }
 
-        /* ——— СЕКЦИЯ ДОБАВЛЕНИЯ В МОДАЛКЕ ДНЯ ——— */
+        /* ——— БЛОК ДОБАВЛЕНИЯ ——— */
         .modal-add-section {
-            margin-top: 20px;
-            border-top: 1px solid var(--cell-border);
+            margin-top: 8px;
             padding-top: 16px;
         }
 
@@ -734,7 +790,7 @@
             padding: 8px 0;
         }
 
-        /* ——— МОДАЛКА РЕКОМЕНДАЦИЙ ——— */
+        /* ——— МОДАЛКА РЕКОМЕНДАЦИЙ И ЛЮБИМЫХ ——— */
         .rec-modal .modal {
             max-width: 480px;
         }
@@ -762,6 +818,7 @@
             transition: 0.15s;
             font-size: 14px;
             color: var(--text-primary);
+            gap: 8px;
         }
 
         .rec-modal .rec-item:hover {
@@ -770,11 +827,27 @@
 
         .rec-modal .rec-item .rec-name {
             font-weight: 500;
+            flex: 1;
         }
 
         .rec-modal .rec-item .rec-days {
             font-size: 12px;
             color: var(--text-muted);
+        }
+
+        .rec-modal .rec-item .rec-remove {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: 0.15s;
+            padding: 0 4px;
+        }
+
+        .rec-modal .rec-item .rec-remove:hover {
+            color: #e55a5a;
+            transform: scale(1.2);
         }
 
         .rec-modal .rec-empty {
@@ -952,54 +1025,6 @@
             color: var(--text-primary);
         }
 
-        /* ——— БЛОК ЛЮБИМЫХ ——— */
-        .favorites-section {
-            display: none;
-            margin-top: 16px;
-            background: rgba(128, 128, 140, 0.04);
-            border-radius: 24px;
-            padding: 14px 16px;
-        }
-
-        .favorites-section.active {
-            display: block;
-        }
-
-        .favorites-section h3 {
-            font-weight: 540;
-            font-size: 15px;
-            color: var(--text-primary);
-            margin-bottom: 10px;
-        }
-
-        .favorites-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .fav-item {
-            background: var(--tag-bg);
-            padding: 5px 14px;
-            border-radius: 30px;
-            font-size: 13px;
-            border: 1px solid var(--cell-border);
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--text-primary);
-        }
-
-        .fav-item .heart {
-            color: var(--liked-color);
-        }
-
-        .hint {
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-top: 8px;
-        }
-
         /* ——— АДАПТИВ ——— */
         @media (max-width: 700px) {
             .app { padding: 16px 12px; border-radius: 28px; }
@@ -1008,7 +1033,7 @@
             .header { flex-direction: column; align-items: stretch; }
             .controls { justify-content: center; flex-wrap: wrap; }
             .logo h1 { font-size: 22px; text-align: center; }
-            .logo span { display: inline-block; }
+            .logo h1 span { display: inline-block; }
             .what-cook-btn { font-size: 15px; padding: 10px 20px; }
             .add-dish-btn { font-size: 13px; padding: 6px 14px; }
             .choice-modal { padding: 24px 18px; }
@@ -1026,6 +1051,9 @@
             .modal-add-new { flex-direction: column; }
             .modal-add-new input, .modal-add-new select, .modal-add-new button { width: 100%; }
             .rec-modal .modal { max-width: 100%; }
+            .calendar-header { flex-direction: column; align-items: stretch; }
+            .calendar-header .nav-group { justify-content: center; }
+            .today-btn { width: 100%; text-align: center; }
         }
 
         @media (max-width: 480px) {
@@ -1054,6 +1082,7 @@
             .week-row .day-col { font-size: 11px; }
             .week-row .meal-chip { font-size: 11px; padding: 1px 6px; }
             .rec-modal .rec-item { font-size: 13px; padding: 6px 10px; }
+            .today-btn { font-size: 12px; padding: 3px 10px; }
         }
 
         @media (min-width: 1000px) {
@@ -1067,7 +1096,7 @@
 <div class="app">
     <div class="header">
         <div class="logo">
-            <h1>🍽️ Меню <span>умное</span></h1>
+            <h1>🍽️ Меню <span>планировщик</span></h1>
         </div>
         <div class="controls">
             <div class="view-toggle" id="viewToggle">
@@ -1079,15 +1108,18 @@
 
     <div class="smart-btn-wrap">
         <button class="what-cook-btn" id="suggestBtn">🤔 Что приготовить?</button>
-        <button class="favorites-btn" id="favoritesToggle"><span class="heart">❤️</span> Любимые</button>
+        <button class="favorites-btn" id="favoritesBtn"><span class="heart">❤️</span> Любимые</button>
         <button class="add-dish-btn" id="addDishBtn">➕ Добавить блюдо</button>
     </div>
 
     <div class="calendar-wrap" id="calendarWrap">
         <div class="calendar-header">
-            <button class="month-nav" id="prevMonth">‹</button>
+            <div class="nav-group">
+                <button class="month-nav" id="prevMonth">‹</button>
+                <button class="month-nav" id="nextMonth">›</button>
+                <button class="today-btn" id="todayBtn">Сегодня</button>
+            </div>
             <h2 id="monthTitle">Август 2026</h2>
-            <button class="month-nav" id="nextMonth">›</button>
         </div>
         <div id="calendarContent"></div>
     </div>
@@ -1095,11 +1127,6 @@
     <div class="menu-list" id="menuList">
         <h3>📋 Меню на <span id="menuPeriod">месяц</span></h3>
         <div id="menuContent"></div>
-    </div>
-
-    <div class="favorites-section" id="favoritesSection">
-        <h3>❤️ Любимые блюда</h3>
-        <div class="favorites-list" id="favoritesList"></div>
     </div>
 </div>
 
@@ -1114,11 +1141,11 @@
     </div>
 </div>
 
-<!-- МОДАЛКА РЕКОМЕНДАЦИЙ -->
+<!-- МОДАЛКА РЕКОМЕНДАЦИЙ / ЛЮБИМЫХ -->
 <div class="modal-overlay rec-modal" id="recOverlay">
     <div class="modal">
         <div class="modal-header">
-            <h3>🍽️ Рекомендации</h3>
+            <h3 id="recTitle">Рекомендации</h3>
             <button class="modal-close" id="recClose">✕</button>
         </div>
         <div id="recContent"></div>
@@ -1189,7 +1216,6 @@
     let dishes = [];
     let currentDate = new Date();
     let currentView = 'month';
-    let showFavorites = false;
 
     function initDishes() {
         const saved = localStorage.getItem('smartMenuDishes_v3');
@@ -1264,6 +1290,27 @@
         return `${diff} дней назад`;
     }
 
+    // ——— ОПРЕДЕЛЕНИЕ КАТЕГОРИИ БЛЮДА ———
+    function getCategory(name) {
+        const lower = name.toLowerCase();
+        if (lower.includes('суп') || lower.includes('борщ') || lower.includes('пюре') || lower.includes('бульон')) {
+            return 'soup';
+        }
+        if (lower.includes('салат') || lower.includes('винегрет') || lower.includes('овощ') || lower.includes('зелень')) {
+            return 'salad';
+        }
+        if (lower.includes('котлет') || lower.includes('запекан') || lower.includes('тушен') || 
+            lower.includes('колбас') || lower.includes('жарен') || lower.includes('печень') || 
+            lower.includes('мясо') || lower.includes('курин') || lower.includes('индей') || 
+            lower.includes('рыб') || lower.includes('бифштекс') || lower.includes('стейк') || 
+            lower.includes('паста') || lower.includes('макарон') || lower.includes('греч') || 
+            lower.includes('рис') || lower.includes('плов') || lower.includes('картош') || 
+            lower.includes('каш')) {
+            return 'main';
+        }
+        return 'other';
+    }
+
     // ——— РЕНДЕР КАЛЕНДАРЯ ———
     function renderCalendar() {
         const container = document.getElementById('calendarContent');
@@ -1282,7 +1329,6 @@
         }
 
         updateMenu();
-        updateFavorites();
     }
 
     function renderMonthView(container, year, month) {
@@ -1396,7 +1442,7 @@
     function updateMenu() {
         const container = document.getElementById('menuContent');
         const periodLabel = document.getElementById('menuPeriod');
-        periodLabel.textContent = currentView === 'month' ? 'месяц' : 'неделя';
+        periodLabel.textContent = currentView === 'month' ? 'месяц' : 'неделю';
 
         let days = [];
         if (currentView === 'month') {
@@ -1434,9 +1480,14 @@
             html += `<div class="menu-group">`;
             html += `<div class="menu-date">${displayDate}</div>`;
             dayDishes.forEach(dish => {
+                const category = getCategory(dish.name);
+                let categoryClass = '';
+                if (category === 'soup') categoryClass = 'category-soup';
+                else if (category === 'salad') categoryClass = 'category-salad';
+                else if (category === 'main') categoryClass = 'category-main';
                 const statusLabel = dish.status === 'done' ? '✅' : '📅';
                 html += `
-                    <div class="menu-item ${dish.status}">
+                    <div class="menu-item ${dish.status} ${categoryClass}">
                         <span>${dish.name}</span>
                         <span class="status-badge">${statusLabel}</span>
                     </div>
@@ -1461,6 +1512,10 @@
 
         let html = '';
 
+        // Блок "Меню на день"
+        html += `<div class="day-meals-section">`;
+        html += `<h4>📋 Меню на день</h4>`;
+
         if (dayDishes.length === 0) {
             html += `<div class="modal-empty">😌 На этот день пока ничего нет</div>`;
         } else {
@@ -1479,6 +1534,7 @@
                 `;
             });
         }
+        html += `</div>`;
 
         // Блок добавления
         html += `
@@ -1492,7 +1548,7 @@
                     </select>
                     <button id="modalAddDishBtn">Добавить</button>
                 </div>
-                <h4 style="margin-top: 10px;">📖 Выбрать из меню</h4>
+                <h4 style="margin-top: 12px;">📖 Выбрать из меню</h4>
                 <div class="modal-suggest-list" id="modalSuggestList">
         `;
 
@@ -1629,9 +1685,7 @@
     }
 
     function getRecommendations() {
-        // Берём только те, что готовила (done)
         const doneDishes = dishes.filter(d => d.status === 'done');
-        // Группируем по имени, берём последнюю дату
         const map = {};
         doneDishes.forEach(d => {
             if (!map[d.name] || d.date > map[d.name]) {
@@ -1639,35 +1693,101 @@
             }
         });
         const unique = Object.values(map);
-        // Сортируем по дате (старые вперёд)
         unique.sort((a, b) => a.lastDate.localeCompare(b.lastDate));
-
-        // Отделяем любимые
         const liked = unique.filter(item => item.liked);
         const others = unique.filter(item => !item.liked);
-
-        // Берём до 3 любимых
-        const topLiked = liked.slice(0, 3);
-        // Берём до 5 остальных, исключая уже выбранные имена (если пересекаются — но они не пересекаются)
-        const topOthers = others.slice(0, 5);
-
-        return { liked: topLiked, others: topOthers };
+        return { liked: liked.slice(0, 3), others: others.slice(0, 5) };
     }
 
     // ——— МОДАЛКА РЕКОМЕНДАЦИЙ ———
     const recOverlay = document.getElementById('recOverlay');
     const recClose = document.getElementById('recClose');
     const recContent = document.getElementById('recContent');
+    const recTitle = document.getElementById('recTitle');
 
     function openRecommendations() {
+        recTitle.textContent = '🍽️ Рекомендации';
         const { liked, others } = getRecommendations();
+        buildRecModal(liked, others, '👆 Кликните по блюду, чтобы добавить его в план на завтра');
+        recOverlay.classList.add('active');
+    }
 
+    // ——— МОДАЛКА ЛЮБИМЫХ ———
+    function openFavorites() {
+        recTitle.textContent = '❤️ Любимые блюда';
+        const favs = dishes.filter(d => d.liked);
+        if (favs.length === 0) {
+            recContent.innerHTML = `<div class="modal-empty">😌 У вас пока нет любимых блюд. Отмечайте блюда сердечком ❤️ в модалке дня.</div>`;
+        } else {
+            const map = {};
+            favs.forEach(d => {
+                if (!map[d.name] || d.date > map[d.name]) {
+                    map[d.name] = { name: d.name, lastDate: d.date, id: d.id };
+                }
+            });
+            const list = Object.values(map);
+            list.sort((a, b) => a.lastDate.localeCompare(b.lastDate));
+            let html = `<div class="rec-section"><h4>Все любимые блюда</h4>`;
+            list.forEach(item => {
+                const ago = daysAgo(item.lastDate);
+                html += `
+                    <div class="rec-item" data-id="${item.id}" data-name="${item.name}">
+                        <span class="rec-name">❤️ ${item.name}</span>
+                        <span class="rec-days">последний раз ${ago}</span>
+                        <button class="rec-remove" title="Убрать из любимых">✕</button>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+            html += `<div class="rec-hint">👆 Кликните по блюду (кроме крестика), чтобы добавить его в план на завтра.<br>Нажмите ✕, чтобы убрать из любимых.</div>`;
+            recContent.innerHTML = html;
+
+            // Обработчик добавления на завтра (клик по всей строке, кроме кнопки удаления)
+            recContent.querySelectorAll('.rec-item').forEach(item => {
+                const removeBtn = item.querySelector('.rec-remove');
+                // При клике на сам элемент (но не на кнопку удаления)
+                item.addEventListener('click', function(e) {
+                    if (e.target === removeBtn) return;
+                    const name = this.dataset.name;
+                    const tomorrow = new Date();
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    const dateStr = tomorrow.toISOString().slice(0, 10);
+                    dishes.push({
+                        id: Date.now() + Math.random() * 10000,
+                        name: name,
+                        status: 'planned',
+                        date: dateStr,
+                        liked: false,
+                    });
+                    saveDishes();
+                    renderCalendar();
+                    recOverlay.classList.remove('active');
+                    alert(`✅ Блюдо "${name}" добавлено в план на завтра (${formatDate(tomorrow)})`);
+                });
+
+                // Кнопка удаления из любимых
+                if (removeBtn) {
+                    removeBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const id = Number(this.closest('.rec-item').dataset.id);
+                        const dish = dishes.find(d => d.id === id);
+                        if (dish) {
+                            dish.liked = false;
+                            saveDishes();
+                            openFavorites(); // обновляем список
+                        }
+                    });
+                }
+            });
+        }
+        recOverlay.classList.add('active');
+    }
+
+    function buildRecModal(liked, others, hint) {
         let html = '';
-
         if (liked.length === 0 && others.length === 0) {
             html = `<div class="modal-empty">😌 Нет блюд в истории, которые можно было бы предложить.</div>`;
         } else {
-            // Любимые
             if (liked.length > 0) {
                 html += `<div class="rec-section"><h4>❤️ Любимые (давно не готовила)</h4>`;
                 liked.forEach(item => {
@@ -1681,8 +1801,6 @@
                 });
                 html += `</div>`;
             }
-
-            // Остальные
             if (others.length > 0) {
                 html += `<div class="rec-section"><h4>🍽️ Ещё варианты</h4>`;
                 others.forEach(item => {
@@ -1696,17 +1814,13 @@
                 });
                 html += `</div>`;
             }
-
-            html += `<div class="rec-hint">👆 Кликните по блюду, чтобы добавить его в план на завтра</div>`;
+            html += `<div class="rec-hint">${hint}</div>`;
         }
-
         recContent.innerHTML = html;
 
-        // Обработчики клика по блюду — добавить на завтра
         recContent.querySelectorAll('.rec-item').forEach(item => {
             item.addEventListener('click', function() {
                 const name = this.dataset.name;
-                // Добавляем на завтра
                 const tomorrow = new Date();
                 tomorrow.setDate(tomorrow.getDate() + 1);
                 const dateStr = tomorrow.toISOString().slice(0, 10);
@@ -1719,14 +1833,10 @@
                 });
                 saveDishes();
                 renderCalendar();
-                // Закрываем рекомендации
                 recOverlay.classList.remove('active');
-                // Показываем уведомление
                 alert(`✅ Блюдо "${name}" добавлено в план на завтра (${formatDate(tomorrow)})`);
             });
         });
-
-        recOverlay.classList.add('active');
     }
 
     recClose.addEventListener('click', () => {
@@ -1768,27 +1878,14 @@
         alert('✨ Функция «На твой вкус» будет доступна после загрузки ваших любимых блюд.\nЗагрузите их позже в разделе «Любимые».');
     });
 
-    // ——— БЛОК ЛЮБИМЫХ ———
-    document.getElementById('favoritesToggle').addEventListener('click', function() {
-        showFavorites = !showFavorites;
-        const section = document.getElementById('favoritesSection');
-        section.classList.toggle('active', showFavorites);
-        if (showFavorites) updateFavorites();
-    });
+    // ——— КНОПКА "ЛЮБИМЫЕ" ———
+    document.getElementById('favoritesBtn').addEventListener('click', openFavorites);
 
-    function updateFavorites() {
-        const container = document.getElementById('favoritesList');
-        const favs = dishes.filter(d => d.liked);
-        if (favs.length === 0) {
-            container.innerHTML = '<span style="color: var(--text-muted); font-size: 14px;">Нет любимых блюд</span>';
-        } else {
-            container.innerHTML = favs.map(d => `
-                <span class="fav-item">
-                    <span class="heart">❤️</span> ${d.name}
-                </span>
-            `).join('');
-        }
-    }
+    // ——— КНОПКА "СЕГОДНЯ" ———
+    document.getElementById('todayBtn').addEventListener('click', function() {
+        currentDate = new Date();
+        renderCalendar();
+    });
 
     // ——— ДОБАВЛЕНИЕ (глобальная модалка) ———
     const addModalOverlay = document.getElementById('addModalOverlay');
@@ -1841,7 +1938,6 @@
 
         saveDishes();
         renderCalendar();
-        updateFavorites();
         closeAddModal();
         nameInput.value = '';
     });
@@ -1906,7 +2002,6 @@
     // ——— СТАРТ ———
     initDishes();
     renderCalendar();
-    updateFavorites();
 </script>
 </body>
 </html>
