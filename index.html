@@ -39,6 +39,7 @@
             --modal-text: #1c1c2a;
             --chip-bg: rgba(255, 255, 255, 0.7);
             --week-row-bg: rgba(255, 255, 255, 0.3);
+            --menu-item-bg: rgba(255, 255, 255, 0.3);
         }
 
         @media (prefers-color-scheme: dark) {
@@ -69,6 +70,7 @@
                 --modal-text: #ececf0;
                 --chip-bg: rgba(45, 45, 65, 0.7);
                 --week-row-bg: rgba(40, 40, 56, 0.5);
+                --menu-item-bg: rgba(40, 40, 56, 0.5);
             }
         }
 
@@ -277,7 +279,6 @@
             gap: 4px;
         }
 
-        /* Ячейки для месяца */
         .day-cell {
             border-radius: 18px;
             display: flex;
@@ -342,7 +343,7 @@
             border-width: 2px;
         }
 
-        /* ——— НЕДЕЛЬНЫЙ СПИСОК ——— */
+        /* ——— НЕДЕЛЬНЫЙ СПИСОК (таблица) ——— */
         .week-list {
             display: flex;
             flex-direction: column;
@@ -352,12 +353,12 @@
 
         .week-row {
             display: grid;
-            grid-template-columns: 70px 1fr 2fr;
-            gap: 12px;
+            grid-template-columns: 50px 80px 1fr;
+            gap: 10px;
             align-items: center;
             background: var(--week-row-bg);
-            border-radius: 16px;
-            padding: 10px 14px;
+            border-radius: 14px;
+            padding: 8px 12px;
             border: 1px solid var(--cell-border);
             cursor: pointer;
             transition: 0.15s;
@@ -371,12 +372,14 @@
             font-weight: 600;
             font-size: 15px;
             color: var(--text-primary);
+            text-align: center;
         }
 
         .week-row .day-col {
             font-weight: 500;
             font-size: 13px;
             color: var(--text-secondary);
+            text-align: center;
         }
 
         .week-row .meals-col {
@@ -410,6 +413,65 @@
             color: var(--text-muted);
             font-size: 13px;
             font-style: italic;
+        }
+
+        /* ——— ТЕКСТОВОЕ МЕНЮ (список под календарём) ——— */
+        .menu-list {
+            margin-top: 16px;
+            background: rgba(128, 128, 140, 0.04);
+            border-radius: 24px;
+            padding: 14px 16px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .menu-list h3 {
+            font-weight: 540;
+            font-size: 15px;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .menu-group {
+            margin-bottom: 10px;
+        }
+
+        .menu-date {
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .menu-item {
+            padding: 5px 12px;
+            border-radius: 12px;
+            background: var(--menu-item-bg);
+            margin-bottom: 3px;
+            font-size: 14px;
+            color: var(--text-primary);
+            display: flex;
+            justify-content: space-between;
+            border-left: 3px solid var(--text-muted);
+        }
+
+        .menu-item.done {
+            border-left-color: var(--done-color);
+        }
+        .menu-item.planned {
+            border-left-color: var(--planned-color);
+        }
+
+        .menu-item .status-badge {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .menu-empty {
+            color: var(--text-muted);
+            text-align: center;
+            padding: 20px 0;
+            font-size: 14px;
         }
 
         /* ——— МОДАЛКА ДНЯ ——— */
@@ -769,9 +831,9 @@
             .choice-modal .choice-btn { font-size: 16px; padding: 12px 16px; }
 
             .week-row {
-                grid-template-columns: 50px 1fr 1.5fr;
-                gap: 8px;
-                padding: 8px 12px;
+                grid-template-columns: 40px 60px 1fr;
+                gap: 6px;
+                padding: 6px 10px;
             }
             .week-row .date-col { font-size: 14px; }
             .week-row .day-col { font-size: 12px; }
@@ -797,11 +859,10 @@
             .choice-modal h2 { font-size: 20px; }
 
             .week-row {
-                grid-template-columns: 1fr 1fr 2fr;
+                grid-template-columns: 30px 50px 1fr;
                 gap: 4px;
-                padding: 6px 8px;
-                border-radius: 12px;
-                font-size: 12px;
+                padding: 4px 8px;
+                border-radius: 10px;
             }
             .week-row .date-col { font-size: 13px; }
             .week-row .day-col { font-size: 11px; }
@@ -848,6 +909,12 @@
             <button class="month-nav" id="nextMonth">›</button>
         </div>
         <div id="calendarContent"></div>
+    </div>
+
+    <!-- ТЕКСТОВОЕ МЕНЮ НА ПЕРИОД -->
+    <div class="menu-list" id="menuList">
+        <h3>📋 Меню на <span id="menuPeriod">месяц</span></h3>
+        <div id="menuContent"></div>
     </div>
 
     <!-- БЛОК ЛЮБИМЫХ -->
@@ -982,7 +1049,7 @@
         return week;
     }
 
-    // ——— РЕНДЕР КАЛЕНДАРЯ (выбор вида) ———
+    // ——— РЕНДЕР КАЛЕНДАРЯ ———
     function renderCalendar() {
         const container = document.getElementById('calendarContent');
         const year = currentDate.getFullYear();
@@ -999,10 +1066,11 @@
             renderWeekView(container);
         }
 
+        updateMenu();        // обновляем текстовое меню
         updateFavorites();
     }
 
-    // ——— МЕСЯЦ ———
+    // ——— МЕСЯЦ (сетка) ———
     function renderMonthView(container, year, month) {
         const grid = document.createElement('div');
         grid.className = 'days-grid';
@@ -1057,7 +1125,7 @@
         return cell;
     }
 
-    // ——— НЕДЕЛЯ (список) ———
+    // ——— НЕДЕЛЯ (таблица) ———
     function renderWeekView(container) {
         const week = getWeekDays(currentDate);
         const list = document.createElement('div');
@@ -1072,19 +1140,16 @@
             const row = document.createElement('div');
             row.className = 'week-row';
 
-            // Колонка даты
             const dateCol = document.createElement('div');
             dateCol.className = 'date-col';
             dateCol.textContent = `${day.getDate()}`;
             row.appendChild(dateCol);
 
-            // Колонка дня недели
             const dayCol = document.createElement('div');
             dayCol.className = 'day-col';
             dayCol.textContent = dayNames[idx];
             row.appendChild(dayCol);
 
-            // Колонка с блюдами
             const mealsCol = document.createElement('div');
             mealsCol.className = 'meals-col';
 
@@ -1104,7 +1169,6 @@
             }
             row.appendChild(mealsCol);
 
-            // Клик по строке открывает модалку
             row.addEventListener('click', () => {
                 if (dayDishes.length > 0) openModal(dateStr);
             });
@@ -1113,6 +1177,62 @@
         });
 
         container.appendChild(list);
+    }
+
+    // ——— ТЕКСТОВОЕ МЕНЮ (список под календарём) ———
+    function updateMenu() {
+        const container = document.getElementById('menuContent');
+        const periodLabel = document.getElementById('menuPeriod');
+        periodLabel.textContent = currentView === 'month' ? 'месяц' : 'неделя';
+
+        let days = [];
+        if (currentView === 'month') {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const last = new Date(year, month + 1, 0);
+            for (let d = 1; d <= last.getDate(); d++) {
+                days.push(new Date(year, month, d));
+            }
+        } else {
+            days = getWeekDays(currentDate);
+        }
+
+        const grouped = {};
+        days.forEach(day => {
+            const dateStr = day.toISOString().slice(0, 10);
+            const dayDishes = getDishesForDate(dateStr);
+            if (dayDishes.length > 0) {
+                grouped[dateStr] = dayDishes;
+            }
+        });
+
+        const sortedDates = Object.keys(grouped).sort();
+
+        if (sortedDates.length === 0) {
+            container.innerHTML = `<div class="menu-empty">😌 Нет блюд на этот период</div>`;
+            return;
+        }
+
+        let html = '';
+        sortedDates.forEach(dateStr => {
+            const d = new Date(dateStr);
+            const dayDishes = grouped[dateStr];
+            const displayDate = formatDate(d);
+            html += `<div class="menu-group">`;
+            html += `<div class="menu-date">${displayDate}</div>`;
+            dayDishes.forEach(dish => {
+                const statusLabel = dish.status === 'done' ? '✅' : '📅';
+                html += `
+                    <div class="menu-item ${dish.status}">
+                        <span>${dish.name}</span>
+                        <span class="status-badge">${statusLabel}</span>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        });
+
+        container.innerHTML = html;
     }
 
     // ——— МОДАЛКА ДНЯ ———
@@ -1201,7 +1321,7 @@
         alert('✨ Функция «На твой вкус» будет доступна после загрузки ваших любимых блюд.\nЗагрузите их позже в разделе «Любимые».');
     });
 
-    // ——— ЛОГИКА ПРЕДЛОЖЕНИЯ (из моего меню) ———
+    // ——— ЛОГИКА ПРЕДЛОЖЕНИЯ ———
     function suggestDish() {
         const doneDishes = dishes.filter(d => d.status === 'done');
         if (doneDishes.length === 0) {
