@@ -40,6 +40,7 @@
             --chip-bg: rgba(255, 255, 255, 0.7);
             --week-row-bg: rgba(255, 255, 255, 0.3);
             --menu-item-bg: rgba(255, 255, 255, 0.3);
+            --suggest-item-bg: rgba(128, 128, 140, 0.06);
         }
 
         @media (prefers-color-scheme: dark) {
@@ -71,6 +72,7 @@
                 --chip-bg: rgba(45, 45, 65, 0.7);
                 --week-row-bg: rgba(40, 40, 56, 0.5);
                 --menu-item-bg: rgba(40, 40, 56, 0.5);
+                --suggest-item-bg: rgba(60, 60, 80, 0.4);
             }
         }
 
@@ -519,7 +521,7 @@
             background: var(--modal-bg);
             border-radius: 32px;
             padding: 28px 24px;
-            max-width: 440px;
+            max-width: 540px;
             width: 100%;
             max-height: 85vh;
             overflow-y: auto;
@@ -554,7 +556,7 @@
         }
 
         .modal-dish {
-            padding: 12px 16px;
+            padding: 10px 14px;
             border-radius: 16px;
             margin-bottom: 8px;
             display: flex;
@@ -564,6 +566,8 @@
             border-left: 4px solid var(--text-muted);
             color: var(--modal-text);
             font-size: 15px;
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
         .modal-dish.done {
@@ -576,26 +580,46 @@
             border-left-color: var(--liked-color);
         }
 
+        .modal-dish .dish-name {
+            flex: 1;
+            min-width: 80px;
+        }
+
+        .modal-dish .dish-actions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
         .modal-dish .dish-status {
             font-size: 12px;
             font-weight: 500;
             color: var(--text-muted);
+            margin-right: 4px;
         }
 
-        .modal-dish .like-btn {
+        .modal-dish .action-btn {
             background: none;
             border: none;
-            font-size: 22px;
+            font-size: 18px;
             cursor: pointer;
-            transition: 0.2s;
             padding: 0 4px;
+            transition: 0.15s;
             color: var(--text-muted);
+        }
+        .modal-dish .action-btn:hover {
+            transform: scale(1.2);
+            color: var(--text-primary);
+        }
+        .modal-dish .delete-btn:hover {
+            color: #e55a5a;
+        }
+        .modal-dish .like-btn {
+            font-size: 20px;
         }
         .modal-dish .like-btn.liked {
             color: var(--liked-color);
-        }
-        .modal-dish .like-btn:hover {
-            transform: scale(1.2);
         }
 
         .modal-empty {
@@ -605,7 +629,110 @@
             font-size: 15px;
         }
 
-        /* ——— МОДАЛКА ДОБАВЛЕНИЯ БЛЮДА ——— */
+        /* ——— СЕКЦИЯ ДОБАВЛЕНИЯ В МОДАЛКЕ ——— */
+        .modal-add-section {
+            margin-top: 20px;
+            border-top: 1px solid var(--cell-border);
+            padding-top: 16px;
+        }
+
+        .modal-add-section h4 {
+            font-size: 15px;
+            font-weight: 550;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .modal-add-new {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+
+        .modal-add-new input {
+            flex: 2;
+            padding: 8px 14px;
+            border-radius: 40px;
+            border: 1px solid var(--cell-border);
+            background: var(--input-bg);
+            font-size: 14px;
+            color: var(--text-primary);
+            outline: none;
+            min-width: 120px;
+        }
+
+        .modal-add-new input:focus {
+            border-color: var(--done-color);
+            box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15);
+        }
+
+        .modal-add-new select {
+            padding: 8px 14px;
+            border-radius: 40px;
+            border: 1px solid var(--cell-border);
+            background: var(--input-bg);
+            font-size: 14px;
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        .modal-add-new button {
+            background: var(--btn-bg);
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            color: var(--btn-text);
+            font-weight: 550;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+
+        .modal-add-new button:hover {
+            filter: brightness(1.12);
+        }
+
+        .modal-suggest-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .modal-suggest-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 12px;
+            background: var(--suggest-item-bg);
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.15s;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .modal-suggest-item:hover {
+            background: var(--day-hover);
+        }
+
+        .modal-suggest-item .suggest-name {
+            font-weight: 500;
+        }
+
+        .modal-suggest-item .suggest-last {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .modal-no-suggest {
+            color: var(--text-muted);
+            font-size: 14px;
+            font-style: italic;
+            padding: 8px 0;
+        }
+
+        /* ——— МОДАЛКА ДОБАВЛЕНИЯ БЛЮДА (глобальная) ——— */
         .add-modal .modal {
             max-width: 400px;
         }
@@ -834,6 +961,9 @@
             .week-row .date-col { font-size: 14px; }
             .week-row .day-col { font-size: 12px; }
             .week-row .meal-chip { font-size: 12px; padding: 1px 8px; }
+            .modal { padding: 20px 16px; max-width: 100%; }
+            .modal-add-new { flex-direction: column; }
+            .modal-add-new input, .modal-add-new select, .modal-add-new button { width: 100%; }
         }
 
         @media (max-width: 480px) {
@@ -849,7 +979,7 @@
             .favorites-btn { font-size: 12px; padding: 6px 12px; }
             .add-dish-btn { font-size: 12px; padding: 5px 12px; }
             .modal { padding: 16px 12px; border-radius: 24px; }
-            .modal-dish { font-size: 13px; padding: 8px 12px; }
+            .modal-dish { font-size: 13px; padding: 8px 10px; }
             .choice-modal h2 { font-size: 20px; }
 
             .week-row {
@@ -872,7 +1002,6 @@
 <body>
 
 <div class="app">
-    <!-- ШАПКА -->
     <div class="header">
         <div class="logo">
             <h1>🍽️ Меню <span>умное</span></h1>
@@ -885,20 +1014,12 @@
         </div>
     </div>
 
-    <!-- КНОПКИ ДЕЙСТВИЙ -->
     <div class="smart-btn-wrap">
-        <button class="what-cook-btn" id="suggestBtn">
-            🤔 Что приготовить?
-        </button>
-        <button class="favorites-btn" id="favoritesToggle">
-            <span class="heart">❤️</span> Любимые
-        </button>
-        <button class="add-dish-btn" id="addDishBtn">
-            ➕ Добавить блюдо
-        </button>
+        <button class="what-cook-btn" id="suggestBtn">🤔 Что приготовить?</button>
+        <button class="favorites-btn" id="favoritesToggle"><span class="heart">❤️</span> Любимые</button>
+        <button class="add-dish-btn" id="addDishBtn">➕ Добавить блюдо</button>
     </div>
 
-    <!-- КАЛЕНДАРЬ (контейнер) -->
     <div class="calendar-wrap" id="calendarWrap">
         <div class="calendar-header">
             <button class="month-nav" id="prevMonth">‹</button>
@@ -908,13 +1029,11 @@
         <div id="calendarContent"></div>
     </div>
 
-    <!-- ТЕКСТОВОЕ МЕНЮ НА ПЕРИОД -->
     <div class="menu-list" id="menuList">
         <h3>📋 Меню на <span id="menuPeriod">месяц</span></h3>
         <div id="menuContent"></div>
     </div>
 
-    <!-- БЛОК ЛЮБИМЫХ -->
     <div class="favorites-section" id="favoritesSection">
         <h3>❤️ Любимые блюда</h3>
         <div class="favorites-list" id="favoritesList"></div>
@@ -932,7 +1051,7 @@
     </div>
 </div>
 
-<!-- МОДАЛКА ДОБАВЛЕНИЯ БЛЮДА -->
+<!-- МОДАЛКА ДОБАВЛЕНИЯ БЛЮДА (глобальная) -->
 <div class="modal-overlay add-modal" id="addModalOverlay">
     <div class="modal">
         <div class="modal-header">
@@ -1080,7 +1199,6 @@
         updateFavorites();
     }
 
-    // ——— МЕСЯЦ (сетка) ———
     function renderMonthView(container, year, month) {
         const grid = document.createElement('div');
         grid.className = 'days-grid';
@@ -1129,13 +1247,12 @@
         cell.appendChild(numDiv);
 
         cell.addEventListener('click', () => {
-            if (dayDishes.length > 0) openModal(dateStr);
+            openModal(dateStr);
         });
 
         return cell;
     }
 
-    // ——— НЕДЕЛЯ (таблица) ———
     function renderWeekView(container) {
         const week = getWeekDays(currentDate);
         const list = document.createElement('div');
@@ -1180,7 +1297,7 @@
             row.appendChild(mealsCol);
 
             row.addEventListener('click', () => {
-                if (dayDishes.length > 0) openModal(dateStr);
+                openModal(dateStr);
             });
 
             list.appendChild(row);
@@ -1189,7 +1306,7 @@
         container.appendChild(list);
     }
 
-    // ——— ТЕКСТОВОЕ МЕНЮ (список под календарём) ———
+    // ——— ТЕКСТОВОЕ МЕНЮ ———
     function updateMenu() {
         const container = document.getElementById('menuContent');
         const periodLabel = document.getElementById('menuPeriod');
@@ -1245,6 +1362,31 @@
         container.innerHTML = html;
     }
 
+    // ——— ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ———
+    function getUniqueDishesWithLastDate() {
+        const map = {};
+        dishes.forEach(d => {
+            if (!map[d.name] || d.date > map[d.name]) {
+                map[d.name] = d.date;
+            }
+        });
+        const result = Object.entries(map).map(([name, date]) => ({ name, lastDate: date }));
+        result.sort((a, b) => a.lastDate.localeCompare(b.lastDate));
+        return result;
+    }
+
+    function daysAgo(dateStr) {
+        const today = new Date();
+        const d = new Date(dateStr);
+        const diff = Math.floor((today - d) / (1000 * 60 * 60 * 24));
+        if (diff === 0) return 'сегодня';
+        if (diff === 1) return 'вчера';
+        if (diff < 7) return `${diff} дня назад`;
+        if (diff < 14) return 'неделю назад';
+        if (diff < 30) return `${Math.floor(diff / 7)} недели назад`;
+        return `${diff} дней назад`;
+    }
+
     // ——— МОДАЛКА ДНЯ ———
     function openModal(dateStr) {
         const overlay = document.getElementById('modalOverlay');
@@ -1256,33 +1398,155 @@
 
         const dayDishes = getDishesForDate(dateStr);
 
-        if (dayDishes.length === 0) {
-            content.innerHTML = `<div class="modal-empty">😌 На этот день ничего не запланировано</div>`;
-        } else {
-            content.innerHTML = dayDishes.map(dish => `
-                <div class="modal-dish ${dish.status} ${dish.liked ? 'liked' : ''}">
-                    <span>${dish.name}</span>
-                    <div>
-                        <span class="dish-status">${dish.status === 'done' ? '✅ Готовила' : '📅 Планирую'}</span>
-                        <button class="like-btn ${dish.liked ? 'liked' : ''}" data-id="${dish.id}">${dish.liked ? '❤️' : '🤍'}</button>
-                    </div>
-                </div>
-            `).join('');
+        let html = '';
 
-            content.querySelectorAll('.like-btn').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const id = Number(this.dataset.id);
-                    const dish = dishes.find(d => d.id === id);
-                    if (dish) {
-                        dish.liked = !dish.liked;
-                        saveDishes();
-                        renderCalendar();
-                        openModal(dateStr);
-                    }
-                });
+        // Список блюд на день
+        if (dayDishes.length === 0) {
+            html += `<div class="modal-empty">😌 На этот день пока ничего нет</div>`;
+        } else {
+            dayDishes.forEach(dish => {
+                const statusLabel = dish.status === 'done' ? '✅ Готовила' : '📅 Планирую';
+                html += `
+                    <div class="modal-dish ${dish.status} ${dish.liked ? 'liked' : ''}">
+                        <span class="dish-name">${dish.name}</span>
+                        <div class="dish-actions">
+                            <span class="dish-status">${statusLabel}</span>
+                            <button class="action-btn like-btn ${dish.liked ? 'liked' : ''}" data-id="${dish.id}" title="Лайк">${dish.liked ? '❤️' : '🤍'}</button>
+                            <button class="action-btn toggle-status-btn" data-id="${dish.id}" title="Переключить статус">🔄</button>
+                            <button class="action-btn delete-btn" data-id="${dish.id}" title="Удалить">🗑️</button>
+                        </div>
+                    </div>
+                `;
             });
         }
+
+        // Блок добавления нового блюда
+        html += `
+            <div class="modal-add-section">
+                <h4>➕ Добавить блюдо</h4>
+                <div class="modal-add-new">
+                    <input type="text" id="modalNewDishName" placeholder="Название блюда">
+                    <select id="modalNewDishStatus">
+                        <option value="planned">📅 Планирую</option>
+                        <option value="done">✅ Готовила</option>
+                    </select>
+                    <button id="modalAddDishBtn">Добавить</button>
+                </div>
+                <h4 style="margin-top: 10px;">📖 Выбрать из меню</h4>
+                <div class="modal-suggest-list" id="modalSuggestList">
+        `;
+
+        const uniqueDishes = getUniqueDishesWithLastDate();
+        const existingNames = dayDishes.map(d => d.name);
+        const available = uniqueDishes.filter(item => !existingNames.includes(item.name));
+
+        if (available.length === 0) {
+            html += `<div class="modal-no-suggest">Все блюда уже добавлены на этот день</div>`;
+        } else {
+            available.forEach(item => {
+                const lastText = item.lastDate ? `Последний раз: ${daysAgo(item.lastDate)}` : 'Никогда не готовила';
+                html += `
+                    <div class="modal-suggest-item" data-name="${item.name}">
+                        <span class="suggest-name">${item.name}</span>
+                        <span class="suggest-last">${lastText}</span>
+                    </div>
+                `;
+            });
+        }
+
+        html += `</div></div>`;
+
+        content.innerHTML = html;
+
+        // ——— ОБРАБОТЧИКИ ———
+
+        // Лайк
+        content.querySelectorAll('.like-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const id = Number(this.dataset.id);
+                const dish = dishes.find(d => d.id === id);
+                if (dish) {
+                    dish.liked = !dish.liked;
+                    saveDishes();
+                    renderCalendar();
+                    openModal(dateStr);
+                }
+            });
+        });
+
+        // Переключение статуса
+        content.querySelectorAll('.toggle-status-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const id = Number(this.dataset.id);
+                const dish = dishes.find(d => d.id === id);
+                if (dish) {
+                    dish.status = dish.status === 'done' ? 'planned' : 'done';
+                    saveDishes();
+                    renderCalendar();
+                    openModal(dateStr);
+                }
+            });
+        });
+
+        // Удаление
+        content.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const id = Number(this.dataset.id);
+                if (confirm('Удалить это блюдо?')) {
+                    dishes = dishes.filter(d => d.id !== id);
+                    saveDishes();
+                    renderCalendar();
+                    openModal(dateStr);
+                }
+            });
+        });
+
+        // Добавление нового блюда через форму в модалке
+        const addBtn = document.getElementById('modalAddDishBtn');
+        const nameInput = document.getElementById('modalNewDishName');
+        const statusSelect = document.getElementById('modalNewDishStatus');
+
+        if (addBtn) {
+            addBtn.addEventListener('click', function() {
+                const name = nameInput.value.trim();
+                if (!name) {
+                    alert('Введи название блюда');
+                    return;
+                }
+                const status = statusSelect.value;
+                dishes.push({
+                    id: Date.now() + Math.random() * 10000,
+                    name: name,
+                    status: status,
+                    date: dateStr,
+                    liked: false,
+                });
+                saveDishes();
+                renderCalendar();
+                openModal(dateStr);
+                nameInput.value = '';
+            });
+        }
+
+        // Клик по предложенному блюду из списка
+        content.querySelectorAll('.modal-suggest-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const name = this.dataset.name;
+                dishes.push({
+                    id: Date.now() + Math.random() * 10000,
+                    name: name,
+                    status: 'planned',
+                    date: dateStr,
+                    liked: false,
+                });
+                saveDishes();
+                renderCalendar();
+                openModal(dateStr);
+            });
+        });
 
         overlay.classList.add('active');
     }
@@ -1297,14 +1561,13 @@
         }
     });
 
-    // ——— МОДАЛКА ДОБАВЛЕНИЯ БЛЮДА ———
+    // ——— МОДАЛКА ДОБАВЛЕНИЯ БЛЮДА (глобальная) ———
     const addModalOverlay = document.getElementById('addModalOverlay');
     const addModalClose = document.getElementById('addModalClose');
     const addModalCancel = document.getElementById('addModalCancel');
     const addModalSave = document.getElementById('addModalSave');
 
     document.getElementById('addDishBtn').addEventListener('click', () => {
-        // Устанавливаем дату по умолчанию (завтра)
         const defaultDate = new Date();
         defaultDate.setDate(defaultDate.getDate() + 1);
         document.getElementById('newDishDate').value = defaultDate.toISOString().slice(0, 10);
@@ -1351,7 +1614,6 @@
         renderCalendar();
         updateFavorites();
         closeAddModal();
-        // Очищаем поля
         nameInput.value = '';
     });
 
