@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>Меню · Календарь</title>
     <style>
+        /* Все стили без изменений (они были хорошие) */
         * {
             margin: 0;
             padding: 0;
@@ -245,7 +246,6 @@
             filter: brightness(1.08);
         }
 
-        /* ——— КАЛЕНДАРЬ ——— */
         .calendar-wrap {
             background: rgba(128, 128, 140, 0.04);
             border-radius: 28px;
@@ -398,7 +398,6 @@
             border-width: 2px;
         }
 
-        /* ——— НЕДЕЛЯ (таблица) ——— */
         .week-list {
             display: flex;
             flex-direction: column;
@@ -470,7 +469,6 @@
             font-style: italic;
         }
 
-        /* ——— ТЕКСТОВОЕ МЕНЮ ——— */
         .menu-list {
             margin-top: 16px;
             background: rgba(128, 128, 140, 0.04);
@@ -539,7 +537,6 @@
             font-size: 14px;
         }
 
-        /* ——— МОДАЛКА ДНЯ ——— */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -597,7 +594,6 @@
             color: var(--text-primary);
         }
 
-        /* ——— БЛОК ДНЯ: список блюд ——— */
         .day-meals-section {
             margin-bottom: 20px;
             border-bottom: 2px solid var(--cell-border);
@@ -688,7 +684,6 @@
             font-size: 15px;
         }
 
-        /* ——— БЛОК ДОБАВЛЕНИЯ ——— */
         .modal-add-section {
             margin-top: 8px;
             padding-top: 16px;
@@ -790,7 +785,6 @@
             padding: 8px 0;
         }
 
-        /* ——— МОДАЛКА РЕКОМЕНДАЦИЙ И ЛЮБИМЫХ ——— */
         .rec-modal .modal {
             max-width: 480px;
         }
@@ -866,7 +860,6 @@
             padding-top: 12px;
         }
 
-        /* ——— МОДАЛКА ДОБАВЛЕНИЯ (глобальная) ——— */
         .add-modal .modal {
             max-width: 400px;
         }
@@ -938,7 +931,6 @@
             background: var(--cell-bg);
         }
 
-        /* ——— МОДАЛКА ВЫБОРА "ЧТО ПРИГОТОВИТЬ?" ——— */
         .choice-overlay {
             display: none;
             position: fixed;
@@ -1025,7 +1017,6 @@
             color: var(--text-primary);
         }
 
-        /* ——— АДАПТИВ ——— */
         @media (max-width: 700px) {
             .app { padding: 16px 12px; border-radius: 28px; }
             .day-cell { min-height: 50px; padding: 4px 2px; }
@@ -1192,435 +1183,673 @@
 </div>
 
 <script>
-    // ——— ДАННЫЕ ———
-    const MY_DISHES = [
-        { name: 'Гороховый суп', status: 'done', date: '2026-08-24' },
-        { name: 'Запеканка из фарша и овощей', status: 'done', date: '2026-08-25' },
-        { name: 'Колбаски и запеченая картошка', status: 'done', date: '2026-08-26' },
-        { name: 'Плов', status: 'planned', date: '2026-08-28' },
-        { name: 'Салат с крабовыми палочками', status: 'planned', date: '2026-08-28' },
-        { name: 'Суп борщ?', status: 'planned', date: '2026-08-31' },
-        { name: 'Котлеты с картофельным пюре', status: 'planned', date: '2026-09-01' },
-        { name: 'Салат морковь по-корейски', status: 'planned', date: '2026-09-01' },
-        { name: 'Печень и перловка', status: 'planned', date: '2026-09-02' },
-        { name: 'Мясо по-французски', status: 'planned', date: '2026-09-03' },
-        { name: 'Морская капуста с крабовыми палочками', status: 'planned', date: '2026-09-04' },
-        { name: 'Суп с сайрой', status: 'planned', date: '2026-09-07' },
-        { name: 'Тушеная капуста', status: 'planned', date: '2026-09-08' },
-        { name: 'Запеченные куриные ножки', status: 'planned', date: '2026-09-09' },
-        { name: 'Фунчоза', status: 'planned', date: '2026-09-09' },
-        { name: 'Удон', status: 'planned', date: '2026-09-10' },
-        { name: 'Паста Болоньезе', status: 'planned', date: '2026-09-12' },
-    ];
+    // ============================================================
+    // 1. Модуль данных (DishStore) – управление блюдами
+    // ============================================================
+    const DishStore = (function() {
+        const STORAGE_KEY = 'smartMenuDishes_v3';
+        let dishes = [];
+        let cacheUnique = null;      // кеш уникальных блюд (последняя дата)
+        let cacheRecs = null;        // кеш рекомендаций
 
-    let dishes = [];
-    let currentDate = new Date();
-    let currentView = 'month';
-
-    function initDishes() {
-        const saved = localStorage.getItem('smartMenuDishes_v3');
-        if (saved) {
-            try {
-                const parsed = JSON.parse(saved);
-                if (parsed.length > 0) {
-                    dishes = parsed;
-                    return;
-                }
-            } catch(e) {}
-        }
-
-        const result = MY_DISHES.map((d, i) => ({ ...d, id: Date.now() + i, liked: false }));
-
-        const noDate = [
-            'Салат с морской капустой и крабовым мясом',
-            'Гречка и салат из свежей капусты как в столовой',
-            'Суп-пюре из кабачков'
+        // Начальные данные (fallback)
+        const DEFAULT_DISHES = [
+            { name: 'Гороховый суп', status: 'done', date: '2026-08-24' },
+            { name: 'Запеканка из фарша и овощей', status: 'done', date: '2026-08-25' },
+            { name: 'Колбаски и запеченая картошка', status: 'done', date: '2026-08-26' },
+            { name: 'Плов', status: 'planned', date: '2026-08-28' },
+            { name: 'Салат с крабовыми палочками', status: 'planned', date: '2026-08-28' },
+            { name: 'Суп борщ?', status: 'planned', date: '2026-08-31' },
+            { name: 'Котлеты с картофельным пюре', status: 'planned', date: '2026-09-01' },
+            { name: 'Салат морковь по-корейски', status: 'planned', date: '2026-09-01' },
+            { name: 'Печень и перловка', status: 'planned', date: '2026-09-02' },
+            { name: 'Мясо по-французски', status: 'planned', date: '2026-09-03' },
+            { name: 'Морская капуста с крабовыми палочками', status: 'planned', date: '2026-09-04' },
+            { name: 'Суп с сайрой', status: 'planned', date: '2026-09-07' },
+            { name: 'Тушеная капуста', status: 'planned', date: '2026-09-08' },
+            { name: 'Запеченные куриные ножки', status: 'planned', date: '2026-09-09' },
+            { name: 'Фунчоза', status: 'planned', date: '2026-09-09' },
+            { name: 'Удон', status: 'planned', date: '2026-09-10' },
+            { name: 'Паста Болоньезе', status: 'planned', date: '2026-09-12' },
         ];
-        const today = new Date();
-        noDate.forEach((name, idx) => {
-            const d = new Date(today);
-            d.setDate(d.getDate() + 7 + idx);
-            result.push({
-                id: Date.now() + 1000 + idx,
-                name: name,
-                status: 'planned',
-                date: d.toISOString().slice(0, 10),
-                liked: false
-            });
-        });
 
-        dishes = result;
-        saveDishes();
-    }
-
-    function saveDishes() {
-        localStorage.setItem('smartMenuDishes_v3', JSON.stringify(dishes));
-    }
-
-    function getDishesForDate(dateStr) {
-        return dishes.filter(d => d.date === dateStr);
-    }
-
-    function formatDate(date) {
-        const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
-        return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
-    }
-
-    function getWeekDays(baseDate) {
-        const start = new Date(baseDate);
-        start.setDate(start.getDate() - start.getDay() + 1);
-        const week = [];
-        for (let i = 0; i < 7; i++) {
-            const d = new Date(start);
-            d.setDate(start.getDate() + i);
-            week.push(d);
-        }
-        return week;
-    }
-
-    function daysAgo(dateStr) {
-        const today = new Date();
-        const d = new Date(dateStr);
-        const diff = Math.floor((today - d) / (1000 * 60 * 60 * 24));
-        if (diff === 0) return 'сегодня';
-        if (diff === 1) return 'вчера';
-        if (diff < 7) return `${diff} дня назад`;
-        if (diff < 14) return 'неделю назад';
-        if (diff < 30) return `${Math.floor(diff / 7)} недели назад`;
-        return `${diff} дней назад`;
-    }
-
-    // ——— ОПРЕДЕЛЕНИЕ КАТЕГОРИИ БЛЮДА ———
-    function getCategory(name) {
-        const lower = name.toLowerCase();
-        if (lower.includes('суп') || lower.includes('борщ') || lower.includes('пюре') || lower.includes('бульон')) {
-            return 'soup';
-        }
-        if (lower.includes('салат') || lower.includes('винегрет') || lower.includes('овощ') || lower.includes('зелень')) {
-            return 'salad';
-        }
-        if (lower.includes('котлет') || lower.includes('запекан') || lower.includes('тушен') || 
-            lower.includes('колбас') || lower.includes('жарен') || lower.includes('печень') || 
-            lower.includes('мясо') || lower.includes('курин') || lower.includes('индей') || 
-            lower.includes('рыб') || lower.includes('бифштекс') || lower.includes('стейк') || 
-            lower.includes('паста') || lower.includes('макарон') || lower.includes('греч') || 
-            lower.includes('рис') || lower.includes('плов') || lower.includes('картош') || 
-            lower.includes('каш')) {
-            return 'main';
-        }
-        return 'other';
-    }
-
-    // ——— РЕНДЕР КАЛЕНДАРЯ ———
-    function renderCalendar() {
-        const container = document.getElementById('calendarContent');
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth();
-
-        document.getElementById('monthTitle').textContent =
-            `${['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'][month]} ${year}`;
-
-        container.innerHTML = '';
-
-        if (currentView === 'month') {
-            renderMonthView(container, year, month);
-        } else {
-            renderWeekView(container);
+        function generateId() {
+            return Date.now() + Math.random() * 10000;
         }
 
-        updateMenu();
-    }
-
-    function renderMonthView(container, year, month) {
-        const grid = document.createElement('div');
-        grid.className = 'days-grid';
-
-        const first = new Date(year, month, 1);
-        const last = new Date(year, month + 1, 0);
-        const totalDays = last.getDate();
-        let startDay = first.getDay() - 1;
-        if (startDay < 0) startDay = 6;
-
-        for (let i = 0; i < startDay; i++) {
-            const empty = document.createElement('div');
-            empty.className = 'day-cell empty';
-            grid.appendChild(empty);
-        }
-
-        const today = new Date();
-        const todayStr = today.toISOString().slice(0, 10);
-
-        for (let day = 1; day <= totalDays; day++) {
-            const d = new Date(year, month, day);
-            const dateStr = d.toISOString().slice(0, 10);
-            const cell = createDayCell(d, dateStr, todayStr);
-            grid.appendChild(cell);
-        }
-
-        container.appendChild(grid);
-    }
-
-    function createDayCell(date, dateStr, todayStr) {
-        const cell = document.createElement('div');
-        cell.className = 'day-cell';
-
-        const dayDishes = getDishesForDate(dateStr);
-        const hasDone = dayDishes.some(d => d.status === 'done');
-        const hasPlanned = dayDishes.some(d => d.status === 'planned');
-
-        if (hasDone) cell.classList.add('has-done');
-        if (hasPlanned) cell.classList.add('has-planned');
-        if (hasDone && hasPlanned) cell.classList.add('has-both');
-        if (dateStr === todayStr) cell.classList.add('today');
-
-        const numDiv = document.createElement('div');
-        numDiv.className = 'day-number';
-        numDiv.textContent = date.getDate();
-        cell.appendChild(numDiv);
-
-        cell.addEventListener('click', () => {
-            openModal(dateStr);
-        });
-
-        return cell;
-    }
-
-    function renderWeekView(container) {
-        const week = getWeekDays(currentDate);
-        const list = document.createElement('div');
-        list.className = 'week-list';
-
-        const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-
-        week.forEach((day, idx) => {
-            const dateStr = day.toISOString().slice(0, 10);
-            const dayDishes = getDishesForDate(dateStr);
-
-            const row = document.createElement('div');
-            row.className = 'week-row';
-
-            const dateCol = document.createElement('div');
-            dateCol.className = 'date-col';
-            dateCol.textContent = `${day.getDate()}`;
-            row.appendChild(dateCol);
-
-            const dayCol = document.createElement('div');
-            dayCol.className = 'day-col';
-            dayCol.textContent = dayNames[idx];
-            row.appendChild(dayCol);
-
-            const mealsCol = document.createElement('div');
-            mealsCol.className = 'meals-col';
-
-            if (dayDishes.length === 0) {
-                const empty = document.createElement('span');
-                empty.className = 'empty-meals';
-                empty.textContent = '—';
-                mealsCol.appendChild(empty);
-            } else {
-                dayDishes.forEach(dish => {
-                    const chip = document.createElement('span');
-                    chip.className = `meal-chip ${dish.status}`;
-                    if (dish.liked) chip.classList.add('liked');
-                    chip.textContent = dish.name;
-                    mealsCol.appendChild(chip);
-                });
+        function load() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (Array.isArray(parsed) && parsed.length) {
+                        dishes = parsed;
+                        return true;
+                    }
+                }
+            } catch (e) {
+                console.warn('Ошибка загрузки данных из localStorage:', e);
             }
-            row.appendChild(mealsCol);
+            return false;
+        }
 
-            row.addEventListener('click', () => {
+        function save() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(dishes));
+                // После сохранения сбрасываем кеши
+                cacheUnique = null;
+                cacheRecs = null;
+            } catch (e) {
+                console.error('Ошибка сохранения данных:', e);
+                // Можно показать уведомление пользователю
+            }
+        }
+
+        function init() {
+            if (!load()) {
+                // Если не загрузилось, создаем начальные данные
+                const result = DEFAULT_DISHES.map((d, i) => ({
+                    ...d,
+                    id: generateId() + i,
+                    liked: false
+                }));
+
+                // Добавляем несколько блюд без даты (для примера)
+                const noDate = [
+                    'Салат с морской капустой и крабовым мясом',
+                    'Гречка и салат из свежей капусты как в столовой',
+                    'Суп-пюре из кабачков'
+                ];
+                const today = new Date();
+                noDate.forEach((name, idx) => {
+                    const d = new Date(today);
+                    d.setDate(d.getDate() + 7 + idx);
+                    result.push({
+                        id: generateId() + 1000 + idx,
+                        name: name,
+                        status: 'planned',
+                        date: d.toISOString().slice(0, 10),
+                        liked: false
+                    });
+                });
+
+                dishes = result;
+                save();
+            }
+            cacheUnique = null;
+            cacheRecs = null;
+        }
+
+        // --- Публичные методы ---
+
+        function getAll() {
+            return dishes.slice(); // возвращаем копию
+        }
+
+        function getForDate(dateStr) {
+            return dishes.filter(d => d.date === dateStr);
+        }
+
+        function addDish(name, status, date, liked = false) {
+            if (!name || !status || !date) return false;
+            const id = generateId();
+            dishes.push({ id, name, status, date, liked });
+            save();
+            return true;
+        }
+
+        function removeDish(id) {
+            const index = dishes.findIndex(d => d.id === id);
+            if (index === -1) return false;
+            dishes.splice(index, 1);
+            save();
+            return true;
+        }
+
+        function toggleStatus(id) {
+            const dish = dishes.find(d => d.id === id);
+            if (!dish) return false;
+            dish.status = dish.status === 'done' ? 'planned' : 'done';
+            save();
+            return true;
+        }
+
+        function toggleLike(id) {
+            const dish = dishes.find(d => d.id === id);
+            if (!dish) return false;
+            dish.liked = !dish.liked;
+            save();
+            return true;
+        }
+
+        // Получить уникальные блюда с последней датой (кешируется)
+        function getUniqueWithLastDate() {
+            if (cacheUnique) return cacheUnique;
+            const map = {};
+            dishes.forEach(d => {
+                if (!map[d.name] || d.date > map[d.name]) {
+                    map[d.name] = d.date;
+                }
+            });
+            const result = Object.entries(map).map(([name, date]) => ({ name, lastDate: date }));
+            result.sort((a, b) => a.lastDate.localeCompare(b.lastDate));
+            cacheUnique = result;
+            return result;
+        }
+
+        // Получить рекомендации (кешируется)
+        function getRecommendations() {
+            if (cacheRecs) return cacheRecs;
+            const doneDishes = dishes.filter(d => d.status === 'done');
+            const map = {};
+            doneDishes.forEach(d => {
+                if (!map[d.name] || d.date > map[d.name]) {
+                    map[d.name] = { name: d.name, lastDate: d.date, liked: d.liked };
+                }
+            });
+            const unique = Object.values(map);
+            unique.sort((a, b) => a.lastDate.localeCompare(b.lastDate));
+            const liked = unique.filter(item => item.liked);
+            const others = unique.filter(item => !item.liked);
+            const result = { liked: liked.slice(0, 3), others: others.slice(0, 5) };
+            cacheRecs = result;
+            return result;
+        }
+
+        // Сброс кеша (например, после внешних изменений)
+        function invalidateCache() {
+            cacheUnique = null;
+            cacheRecs = null;
+        }
+
+        // Получить список любимых (все)
+        function getFavorites() {
+            return dishes.filter(d => d.liked);
+        }
+
+        return {
+            init,
+            getAll,
+            getForDate,
+            addDish,
+            removeDish,
+            toggleStatus,
+            toggleLike,
+            getUniqueWithLastDate,
+            getRecommendations,
+            getFavorites,
+            invalidateCache
+        };
+    })();
+
+    // ============================================================
+    // 2. Утилиты (форматирование, категории, безопасность)
+    // ============================================================
+    const Utils = {
+        // Безопасное экранирование для вставки в HTML (если используем innerHTML)
+        escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        },
+
+        formatDate(date) {
+            const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+            return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+        },
+
+        daysAgo(dateStr) {
+            const today = new Date();
+            const d = new Date(dateStr);
+            const diff = Math.floor((today - d) / (1000 * 60 * 60 * 24));
+            if (diff === 0) return 'сегодня';
+            if (diff === 1) return 'вчера';
+            if (diff < 7) return `${diff} дня назад`;
+            if (diff < 14) return 'неделю назад';
+            if (diff < 30) return `${Math.floor(diff / 7)} недели назад`;
+            return `${diff} дней назад`;
+        },
+
+        getCategory(name) {
+            const lower = name.toLowerCase();
+            if (lower.includes('суп') || lower.includes('борщ') || lower.includes('пюре') || lower.includes('бульон')) {
+                return 'soup';
+            }
+            if (lower.includes('салат') || lower.includes('винегрет') || lower.includes('овощ') || lower.includes('зелень')) {
+                return 'salad';
+            }
+            if (lower.includes('котлет') || lower.includes('запекан') || lower.includes('тушен') || 
+                lower.includes('колбас') || lower.includes('жарен') || lower.includes('печень') || 
+                lower.includes('мясо') || lower.includes('курин') || lower.includes('индей') || 
+                lower.includes('рыб') || lower.includes('бифштекс') || lower.includes('стейк') || 
+                lower.includes('паста') || lower.includes('макарон') || lower.includes('греч') || 
+                lower.includes('рис') || lower.includes('плов') || lower.includes('картош') || 
+                lower.includes('каш')) {
+                return 'main';
+            }
+            return 'other';
+        },
+
+        getWeekDays(baseDate) {
+            const start = new Date(baseDate);
+            start.setDate(start.getDate() - start.getDay() + 1);
+            const week = [];
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(start);
+                d.setDate(start.getDate() + i);
+                week.push(d);
+            }
+            return week;
+        },
+
+        // Создание элемента с текстовым содержимым (без innerHTML)
+        createElement(tag, className = '', text = '') {
+            const el = document.createElement(tag);
+            if (className) el.className = className;
+            if (text) el.textContent = text;
+            return el;
+        }
+    };
+
+    // ============================================================
+    // 3. Модуль рендеринга (Renderer) – создание DOM-элементов
+    // ============================================================
+    const Renderer = (function() {
+        // Кеш для текущих view, чтобы не перерисовывать всё
+        let currentView = 'month';
+        let currentDate = new Date();
+        let currentDateStr = currentDate.toISOString().slice(0, 10);
+
+        // DOM-ссылки
+        const monthTitle = document.getElementById('monthTitle');
+        const calendarContent = document.getElementById('calendarContent');
+        const menuContent = document.getElementById('menuContent');
+        const menuPeriod = document.getElementById('menuPeriod');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalDate = document.getElementById('modalDate');
+        const modalContent = document.getElementById('modalContent');
+        const recOverlay = document.getElementById('recOverlay');
+        const recTitle = document.getElementById('recTitle');
+        const recContent = document.getElementById('recContent');
+
+        // --- Рендер календаря ---
+        function renderCalendar(view, date) {
+            currentView = view;
+            currentDate = date;
+            currentDateStr = date.toISOString().slice(0, 10);
+
+            const year = date.getFullYear();
+            const month = date.getMonth();
+            const monthName = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'][month];
+            monthTitle.textContent = `${monthName} ${year}`;
+
+            calendarContent.innerHTML = '';
+            if (view === 'month') {
+                renderMonthView(year, month);
+            } else {
+                renderWeekView(date);
+            }
+            renderMenu();
+        }
+
+        function renderMonthView(year, month) {
+            const grid = document.createElement('div');
+            grid.className = 'days-grid';
+
+            const first = new Date(year, month, 1);
+            const last = new Date(year, month + 1, 0);
+            const totalDays = last.getDate();
+            let startDay = first.getDay() - 1;
+            if (startDay < 0) startDay = 6;
+
+            // Пустые ячейки
+            for (let i = 0; i < startDay; i++) {
+                const empty = document.createElement('div');
+                empty.className = 'day-cell empty';
+                grid.appendChild(empty);
+            }
+
+            const today = new Date();
+            const todayStr = today.toISOString().slice(0, 10);
+
+            for (let day = 1; day <= totalDays; day++) {
+                const d = new Date(year, month, day);
+                const dateStr = d.toISOString().slice(0, 10);
+                const cell = createDayCell(d, dateStr, todayStr);
+                grid.appendChild(cell);
+            }
+
+            calendarContent.appendChild(grid);
+        }
+
+        function createDayCell(date, dateStr, todayStr) {
+            const cell = document.createElement('div');
+            cell.className = 'day-cell';
+
+            const dayDishes = DishStore.getForDate(dateStr);
+            const hasDone = dayDishes.some(d => d.status === 'done');
+            const hasPlanned = dayDishes.some(d => d.status === 'planned');
+
+            if (hasDone) cell.classList.add('has-done');
+            if (hasPlanned) cell.classList.add('has-planned');
+            if (hasDone && hasPlanned) cell.classList.add('has-both');
+            if (dateStr === todayStr) cell.classList.add('today');
+
+            const numDiv = document.createElement('div');
+            numDiv.className = 'day-number';
+            numDiv.textContent = date.getDate();
+            cell.appendChild(numDiv);
+
+            cell.addEventListener('click', () => {
                 openModal(dateStr);
             });
 
-            list.appendChild(row);
-        });
-
-        container.appendChild(list);
-    }
-
-    // ——— ТЕКСТОВОЕ МЕНЮ ———
-    function updateMenu() {
-        const container = document.getElementById('menuContent');
-        const periodLabel = document.getElementById('menuPeriod');
-        periodLabel.textContent = currentView === 'month' ? 'месяц' : 'неделю';
-
-        let days = [];
-        if (currentView === 'month') {
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-            const last = new Date(year, month + 1, 0);
-            for (let d = 1; d <= last.getDate(); d++) {
-                days.push(new Date(year, month, d));
-            }
-        } else {
-            days = getWeekDays(currentDate);
+            return cell;
         }
 
-        const grouped = {};
-        days.forEach(day => {
-            const dateStr = day.toISOString().slice(0, 10);
-            const dayDishes = getDishesForDate(dateStr);
-            if (dayDishes.length > 0) {
-                grouped[dateStr] = dayDishes;
-            }
-        });
+        function renderWeekView(baseDate) {
+            const week = Utils.getWeekDays(baseDate);
+            const list = document.createElement('div');
+            list.className = 'week-list';
 
-        const sortedDates = Object.keys(grouped).sort();
+            const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
-        if (sortedDates.length === 0) {
-            container.innerHTML = `<div class="menu-empty">😌 Нет блюд на этот период</div>`;
-            return;
+            week.forEach((day, idx) => {
+                const dateStr = day.toISOString().slice(0, 10);
+                const dayDishes = DishStore.getForDate(dateStr);
+
+                const row = document.createElement('div');
+                row.className = 'week-row';
+
+                const dateCol = document.createElement('div');
+                dateCol.className = 'date-col';
+                dateCol.textContent = day.getDate();
+                row.appendChild(dateCol);
+
+                const dayCol = document.createElement('div');
+                dayCol.className = 'day-col';
+                dayCol.textContent = dayNames[idx];
+                row.appendChild(dayCol);
+
+                const mealsCol = document.createElement('div');
+                mealsCol.className = 'meals-col';
+
+                if (dayDishes.length === 0) {
+                    const empty = document.createElement('span');
+                    empty.className = 'empty-meals';
+                    empty.textContent = '—';
+                    mealsCol.appendChild(empty);
+                } else {
+                    dayDishes.forEach(dish => {
+                        const chip = document.createElement('span');
+                        chip.className = `meal-chip ${dish.status}`;
+                        if (dish.liked) chip.classList.add('liked');
+                        chip.textContent = dish.name;
+                        mealsCol.appendChild(chip);
+                    });
+                }
+                row.appendChild(mealsCol);
+
+                row.addEventListener('click', () => {
+                    openModal(dateStr);
+                });
+
+                list.appendChild(row);
+            });
+
+            calendarContent.appendChild(list);
         }
 
-        let html = '';
-        sortedDates.forEach(dateStr => {
+        // --- Рендер текстового меню ---
+        function renderMenu() {
+            const view = currentView;
+            menuPeriod.textContent = view === 'month' ? 'месяц' : 'неделю';
+
+            let days = [];
+            if (view === 'month') {
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth();
+                const last = new Date(year, month + 1, 0);
+                for (let d = 1; d <= last.getDate(); d++) {
+                    days.push(new Date(year, month, d));
+                }
+            } else {
+                days = Utils.getWeekDays(currentDate);
+            }
+
+            const grouped = {};
+            days.forEach(day => {
+                const dateStr = day.toISOString().slice(0, 10);
+                const dayDishes = DishStore.getForDate(dateStr);
+                if (dayDishes.length > 0) {
+                    grouped[dateStr] = dayDishes;
+                }
+            });
+
+            const sortedDates = Object.keys(grouped).sort();
+
+            menuContent.innerHTML = '';
+            if (sortedDates.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'menu-empty';
+                empty.textContent = '😌 Нет блюд на этот период';
+                menuContent.appendChild(empty);
+                return;
+            }
+
+            sortedDates.forEach(dateStr => {
+                const d = new Date(dateStr);
+                const dayDishes = grouped[dateStr];
+                const displayDate = Utils.formatDate(d);
+
+                const group = document.createElement('div');
+                group.className = 'menu-group';
+
+                const dateEl = document.createElement('div');
+                dateEl.className = 'menu-date';
+                dateEl.textContent = displayDate;
+                group.appendChild(dateEl);
+
+                dayDishes.forEach(dish => {
+                    const category = Utils.getCategory(dish.name);
+                    let categoryClass = '';
+                    if (category === 'soup') categoryClass = 'category-soup';
+                    else if (category === 'salad') categoryClass = 'category-salad';
+                    else if (category === 'main') categoryClass = 'category-main';
+
+                    const item = document.createElement('div');
+                    item.className = `menu-item ${dish.status} ${categoryClass}`;
+
+                    const nameSpan = document.createElement('span');
+                    nameSpan.textContent = dish.name;
+                    item.appendChild(nameSpan);
+
+                    const badge = document.createElement('span');
+                    badge.className = 'status-badge';
+                    badge.textContent = dish.status === 'done' ? '✅' : '📅';
+                    item.appendChild(badge);
+
+                    group.appendChild(item);
+                });
+
+                menuContent.appendChild(group);
+            });
+        }
+
+        // --- Модалка дня ---
+        function openModal(dateStr) {
             const d = new Date(dateStr);
-            const dayDishes = grouped[dateStr];
-            const displayDate = formatDate(d);
-            html += `<div class="menu-group">`;
-            html += `<div class="menu-date">${displayDate}</div>`;
-            dayDishes.forEach(dish => {
-                const category = getCategory(dish.name);
-                let categoryClass = '';
-                if (category === 'soup') categoryClass = 'category-soup';
-                else if (category === 'salad') categoryClass = 'category-salad';
-                else if (category === 'main') categoryClass = 'category-main';
-                const statusLabel = dish.status === 'done' ? '✅' : '📅';
-                html += `
-                    <div class="menu-item ${dish.status} ${categoryClass}">
-                        <span>${dish.name}</span>
-                        <span class="status-badge">${statusLabel}</span>
-                    </div>
-                `;
-            });
-            html += `</div>`;
-        });
+            modalDate.textContent = Utils.formatDate(d);
 
-        container.innerHTML = html;
-    }
+            const dayDishes = DishStore.getForDate(dateStr);
+            modalContent.innerHTML = ''; // очищаем
 
-    // ——— МОДАЛКА ДНЯ ———
-    function openModal(dateStr) {
-        const overlay = document.getElementById('modalOverlay');
-        const modalDate = document.getElementById('modalDate');
-        const content = document.getElementById('modalContent');
+            // Блок "Меню на день"
+            const section = document.createElement('div');
+            section.className = 'day-meals-section';
 
-        const d = new Date(dateStr);
-        modalDate.textContent = formatDate(d);
+            const title = document.createElement('h4');
+            title.textContent = '📋 Меню на день';
+            section.appendChild(title);
 
-        const dayDishes = getDishesForDate(dateStr);
+            if (dayDishes.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'modal-empty';
+                empty.textContent = '😌 На этот день пока ничего нет';
+                section.appendChild(empty);
+            } else {
+                dayDishes.forEach(dish => {
+                    const dishDiv = document.createElement('div');
+                    dishDiv.className = `modal-dish ${dish.status}`;
+                    if (dish.liked) dishDiv.classList.add('liked');
 
-        let html = '';
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'dish-name';
+                    nameSpan.textContent = dish.name;
+                    dishDiv.appendChild(nameSpan);
 
-        // Блок "Меню на день"
-        html += `<div class="day-meals-section">`;
-        html += `<h4>📋 Меню на день</h4>`;
+                    const actions = document.createElement('div');
+                    actions.className = 'dish-actions';
 
-        if (dayDishes.length === 0) {
-            html += `<div class="modal-empty">😌 На этот день пока ничего нет</div>`;
-        } else {
-            dayDishes.forEach(dish => {
-                const statusLabel = dish.status === 'done' ? '✅ Готовила' : '📅 Планирую';
-                html += `
-                    <div class="modal-dish ${dish.status} ${dish.liked ? 'liked' : ''}">
-                        <span class="dish-name">${dish.name}</span>
-                        <div class="dish-actions">
-                            <span class="dish-status">${statusLabel}</span>
-                            <button class="action-btn like-btn ${dish.liked ? 'liked' : ''}" data-id="${dish.id}" title="Лайк">${dish.liked ? '❤️' : '🤍'}</button>
-                            <button class="action-btn toggle-status-btn" data-id="${dish.id}" title="Переключить статус">🔄</button>
-                            <button class="action-btn delete-btn" data-id="${dish.id}" title="Удалить">🗑️</button>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-        html += `</div>`;
+                    const statusSpan = document.createElement('span');
+                    statusSpan.className = 'dish-status';
+                    statusSpan.textContent = dish.status === 'done' ? '✅ Готовила' : '📅 Планирую';
+                    actions.appendChild(statusSpan);
 
-        // Блок добавления
-        html += `
-            <div class="modal-add-section">
-                <h4>➕ Добавить блюдо</h4>
-                <div class="modal-add-new">
-                    <input type="text" id="modalNewDishName" placeholder="Название блюда">
-                    <select id="modalNewDishStatus">
-                        <option value="planned">📅 Планирую</option>
-                        <option value="done">✅ Готовила</option>
-                    </select>
-                    <button id="modalAddDishBtn">Добавить</button>
-                </div>
-                <h4 style="margin-top: 12px;">📖 Выбрать из меню</h4>
-                <div class="modal-suggest-list" id="modalSuggestList">
-        `;
+                    // Кнопка лайка
+                    const likeBtn = document.createElement('button');
+                    likeBtn.className = `action-btn like-btn ${dish.liked ? 'liked' : ''}`;
+                    likeBtn.textContent = dish.liked ? '❤️' : '🤍';
+                    likeBtn.title = 'Лайк';
+                    likeBtn.dataset.id = dish.id;
+                    likeBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const id = Number(this.dataset.id);
+                        DishStore.toggleLike(id);
+                        // Переоткрыть модалку
+                        openModal(dateStr);
+                    });
+                    actions.appendChild(likeBtn);
 
-        const uniqueDishes = getUniqueDishesWithLastDate();
-        const existingNames = dayDishes.map(d => d.name);
-        const available = uniqueDishes.filter(item => !existingNames.includes(item.name));
+                    // Кнопка переключения статуса
+                    const toggleBtn = document.createElement('button');
+                    toggleBtn.className = 'action-btn toggle-status-btn';
+                    toggleBtn.textContent = '🔄';
+                    toggleBtn.title = 'Переключить статус';
+                    toggleBtn.dataset.id = dish.id;
+                    toggleBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const id = Number(this.dataset.id);
+                        DishStore.toggleStatus(id);
+                        openModal(dateStr);
+                    });
+                    actions.appendChild(toggleBtn);
 
-        if (available.length === 0) {
-            html += `<div class="modal-no-suggest">Все блюда уже добавлены на этот день</div>`;
-        } else {
-            available.forEach(item => {
-                const lastText = item.lastDate ? `Последний раз: ${daysAgo(item.lastDate)}` : 'Никогда не готовила';
-                html += `
-                    <div class="modal-suggest-item" data-name="${item.name}">
-                        <span class="suggest-name">${item.name}</span>
-                        <span class="suggest-last">${lastText}</span>
-                    </div>
-                `;
-            });
-        }
+                    // Кнопка удаления
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'action-btn delete-btn';
+                    deleteBtn.textContent = '🗑️';
+                    deleteBtn.title = 'Удалить';
+                    deleteBtn.dataset.id = dish.id;
+                    deleteBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const id = Number(this.dataset.id);
+                        if (confirm('Удалить это блюдо?')) {
+                            DishStore.removeDish(id);
+                            openModal(dateStr);
+                        }
+                    });
+                    actions.appendChild(deleteBtn);
 
-        html += `</div></div>`;
+                    dishDiv.appendChild(actions);
+                    section.appendChild(dishDiv);
+                });
+            }
+            modalContent.appendChild(section);
 
-        content.innerHTML = html;
+            // Блок добавления
+            const addSection = document.createElement('div');
+            addSection.className = 'modal-add-section';
 
-        // Обработчики
-        content.querySelectorAll('.like-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const id = Number(this.dataset.id);
-                const dish = dishes.find(d => d.id === id);
-                if (dish) {
-                    dish.liked = !dish.liked;
-                    saveDishes();
-                    renderCalendar();
-                    openModal(dateStr);
-                }
-            });
-        });
+            const addTitle = document.createElement('h4');
+            addTitle.textContent = '➕ Добавить блюдо';
+            addSection.appendChild(addTitle);
 
-        content.querySelectorAll('.toggle-status-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const id = Number(this.dataset.id);
-                const dish = dishes.find(d => d.id === id);
-                if (dish) {
-                    dish.status = dish.status === 'done' ? 'planned' : 'done';
-                    saveDishes();
-                    renderCalendar();
-                    openModal(dateStr);
-                }
-            });
-        });
+            const addForm = document.createElement('div');
+            addForm.className = 'modal-add-new';
 
-        content.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const id = Number(this.dataset.id);
-                if (confirm('Удалить это блюдо?')) {
-                    dishes = dishes.filter(d => d.id !== id);
-                    saveDishes();
-                    renderCalendar();
-                    openModal(dateStr);
-                }
-            });
-        });
+            const nameInput = document.createElement('input');
+            nameInput.type = 'text';
+            nameInput.placeholder = 'Название блюда';
+            nameInput.id = 'modalNewDishName';
+            addForm.appendChild(nameInput);
 
-        const addBtn = document.getElementById('modalAddDishBtn');
-        const nameInput = document.getElementById('modalNewDishName');
-        const statusSelect = document.getElementById('modalNewDishStatus');
+            const statusSelect = document.createElement('select');
+            statusSelect.id = 'modalNewDishStatus';
+            const optPlanned = document.createElement('option');
+            optPlanned.value = 'planned';
+            optPlanned.textContent = '📅 Планирую';
+            statusSelect.appendChild(optPlanned);
+            const optDone = document.createElement('option');
+            optDone.value = 'done';
+            optDone.textContent = '✅ Готовила';
+            statusSelect.appendChild(optDone);
+            addForm.appendChild(statusSelect);
 
-        if (addBtn) {
+            const addBtn = document.createElement('button');
+            addBtn.textContent = 'Добавить';
+            addForm.appendChild(addBtn);
+            addSection.appendChild(addForm);
+
+            // Список предложений
+            const suggestTitle = document.createElement('h4');
+            suggestTitle.textContent = '📖 Выбрать из меню';
+            suggestTitle.style.marginTop = '12px';
+            addSection.appendChild(suggestTitle);
+
+            const suggestList = document.createElement('div');
+            suggestList.className = 'modal-suggest-list';
+            suggestList.id = 'modalSuggestList';
+
+            const uniqueDishes = DishStore.getUniqueWithLastDate();
+            const existingNames = dayDishes.map(d => d.name);
+            const available = uniqueDishes.filter(item => !existingNames.includes(item.name));
+
+            if (available.length === 0) {
+                const noSuggest = document.createElement('div');
+                noSuggest.className = 'modal-no-suggest';
+                noSuggest.textContent = 'Все блюда уже добавлены на этот день';
+                suggestList.appendChild(noSuggest);
+            } else {
+                available.forEach(item => {
+                    const suggestItem = document.createElement('div');
+                    suggestItem.className = 'modal-suggest-item';
+                    suggestItem.dataset.name = item.name;
+
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'suggest-name';
+                    nameSpan.textContent = item.name;
+                    suggestItem.appendChild(nameSpan);
+
+                    const lastSpan = document.createElement('span');
+                    lastSpan.className = 'suggest-last';
+                    lastSpan.textContent = item.lastDate ? `Последний раз: ${Utils.daysAgo(item.lastDate)}` : 'Никогда не готовила';
+                    suggestItem.appendChild(lastSpan);
+
+                    suggestItem.addEventListener('click', function() {
+                        const name = this.dataset.name;
+                        DishStore.addDish(name, 'planned', dateStr, false);
+                        openModal(dateStr);
+                    });
+
+                    suggestList.appendChild(suggestItem);
+                });
+            }
+            addSection.appendChild(suggestList);
+            modalContent.appendChild(addSection);
+
+            // Обработчик для кнопки добавления
             addBtn.addEventListener('click', function() {
                 const name = nameInput.value.trim();
                 if (!name) {
@@ -1628,380 +1857,408 @@
                     return;
                 }
                 const status = statusSelect.value;
-                dishes.push({
-                    id: Date.now() + Math.random() * 10000,
-                    name: name,
-                    status: status,
-                    date: dateStr,
-                    liked: false,
-                });
-                saveDishes();
-                renderCalendar();
+                DishStore.addDish(name, status, dateStr, false);
                 openModal(dateStr);
                 nameInput.value = '';
             });
+
+            modalOverlay.classList.add('active');
         }
 
-        content.querySelectorAll('.modal-suggest-item').forEach(item => {
-            item.addEventListener('click', function() {
-                const name = this.dataset.name;
-                dishes.push({
-                    id: Date.now() + Math.random() * 10000,
-                    name: name,
-                    status: 'planned',
-                    date: dateStr,
-                    liked: false,
+        function closeModal() {
+            modalOverlay.classList.remove('active');
+        }
+
+        // --- Модалка рекомендаций / любимых ---
+        function openRecommendations() {
+            recTitle.textContent = '🍽️ Рекомендации';
+            const { liked, others } = DishStore.getRecommendations();
+            buildRecModal(liked, others, '👆 Кликните по блюду, чтобы добавить его в план на завтра');
+            recOverlay.classList.add('active');
+        }
+
+        function openFavorites() {
+            recTitle.textContent = '❤️ Любимые блюда';
+            const favs = DishStore.getFavorites();
+            recContent.innerHTML = '';
+            if (favs.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'modal-empty';
+                empty.textContent = '😌 У вас пока нет любимых блюд. Отмечайте блюда сердечком ❤️ в модалке дня.';
+                recContent.appendChild(empty);
+            } else {
+                const map = {};
+                favs.forEach(d => {
+                    if (!map[d.name] || d.date > map[d.name]) {
+                        map[d.name] = { name: d.name, lastDate: d.date, id: d.id };
+                    }
                 });
-                saveDishes();
-                renderCalendar();
-                openModal(dateStr);
-            });
-        });
+                const list = Object.values(map);
+                list.sort((a, b) => a.lastDate.localeCompare(b.lastDate));
 
-        overlay.classList.add('active');
-    }
+                const section = document.createElement('div');
+                section.className = 'rec-section';
+                const title = document.createElement('h4');
+                title.textContent = 'Все любимые блюда';
+                section.appendChild(title);
 
-    document.getElementById('modalClose').addEventListener('click', () => {
-        document.getElementById('modalOverlay').classList.remove('active');
-    });
+                list.forEach(item => {
+                    const row = document.createElement('div');
+                    row.className = 'rec-item';
+                    row.dataset.id = item.id;
+                    row.dataset.name = item.name;
 
-    document.getElementById('modalOverlay').addEventListener('click', (e) => {
-        if (e.target === e.currentTarget) {
-            document.getElementById('modalOverlay').classList.remove('active');
-        }
-    });
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'rec-name';
+                    nameSpan.textContent = '❤️ ' + item.name;
+                    row.appendChild(nameSpan);
 
-    // ——— ВСПОМОГАТЕЛЬНЫЕ ДЛЯ РЕКОМЕНДАЦИЙ ———
-    function getUniqueDishesWithLastDate() {
-        const map = {};
-        dishes.forEach(d => {
-            if (!map[d.name] || d.date > map[d.name]) {
-                map[d.name] = d.date;
-            }
-        });
-        const result = Object.entries(map).map(([name, date]) => ({ name, lastDate: date }));
-        result.sort((a, b) => a.lastDate.localeCompare(b.lastDate));
-        return result;
-    }
+                    const daysSpan = document.createElement('span');
+                    daysSpan.className = 'rec-days';
+                    daysSpan.textContent = `последний раз ${Utils.daysAgo(item.lastDate)}`;
+                    row.appendChild(daysSpan);
 
-    function getRecommendations() {
-        const doneDishes = dishes.filter(d => d.status === 'done');
-        const map = {};
-        doneDishes.forEach(d => {
-            if (!map[d.name] || d.date > map[d.name]) {
-                map[d.name] = { name: d.name, lastDate: d.date, liked: d.liked };
-            }
-        });
-        const unique = Object.values(map);
-        unique.sort((a, b) => a.lastDate.localeCompare(b.lastDate));
-        const liked = unique.filter(item => item.liked);
-        const others = unique.filter(item => !item.liked);
-        return { liked: liked.slice(0, 3), others: others.slice(0, 5) };
-    }
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'rec-remove';
+                    removeBtn.textContent = '✕';
+                    removeBtn.title = 'Убрать из любимых';
+                    row.appendChild(removeBtn);
 
-    // ——— МОДАЛКА РЕКОМЕНДАЦИЙ ———
-    const recOverlay = document.getElementById('recOverlay');
-    const recClose = document.getElementById('recClose');
-    const recContent = document.getElementById('recContent');
-    const recTitle = document.getElementById('recTitle');
-
-    function openRecommendations() {
-        recTitle.textContent = '🍽️ Рекомендации';
-        const { liked, others } = getRecommendations();
-        buildRecModal(liked, others, '👆 Кликните по блюду, чтобы добавить его в план на завтра');
-        recOverlay.classList.add('active');
-    }
-
-    // ——— МОДАЛКА ЛЮБИМЫХ ———
-    function openFavorites() {
-        recTitle.textContent = '❤️ Любимые блюда';
-        const favs = dishes.filter(d => d.liked);
-        if (favs.length === 0) {
-            recContent.innerHTML = `<div class="modal-empty">😌 У вас пока нет любимых блюд. Отмечайте блюда сердечком ❤️ в модалке дня.</div>`;
-        } else {
-            const map = {};
-            favs.forEach(d => {
-                if (!map[d.name] || d.date > map[d.name]) {
-                    map[d.name] = { name: d.name, lastDate: d.date, id: d.id };
-                }
-            });
-            const list = Object.values(map);
-            list.sort((a, b) => a.lastDate.localeCompare(b.lastDate));
-            let html = `<div class="rec-section"><h4>Все любимые блюда</h4>`;
-            list.forEach(item => {
-                const ago = daysAgo(item.lastDate);
-                html += `
-                    <div class="rec-item" data-id="${item.id}" data-name="${item.name}">
-                        <span class="rec-name">❤️ ${item.name}</span>
-                        <span class="rec-days">последний раз ${ago}</span>
-                        <button class="rec-remove" title="Убрать из любимых">✕</button>
-                    </div>
-                `;
-            });
-            html += `</div>`;
-            html += `<div class="rec-hint">👆 Кликните по блюду (кроме крестика), чтобы добавить его в план на завтра.<br>Нажмите ✕, чтобы убрать из любимых.</div>`;
-            recContent.innerHTML = html;
-
-            // Обработчик добавления на завтра (клик по всей строке, кроме кнопки удаления)
-            recContent.querySelectorAll('.rec-item').forEach(item => {
-                const removeBtn = item.querySelector('.rec-remove');
-                // При клике на сам элемент (но не на кнопку удаления)
-                item.addEventListener('click', function(e) {
-                    if (e.target === removeBtn) return;
-                    const name = this.dataset.name;
-                    const tomorrow = new Date();
-                    tomorrow.setDate(tomorrow.getDate() + 1);
-                    const dateStr = tomorrow.toISOString().slice(0, 10);
-                    dishes.push({
-                        id: Date.now() + Math.random() * 10000,
-                        name: name,
-                        status: 'planned',
-                        date: dateStr,
-                        liked: false,
+                    // Клик по строке (кроме кнопки) – добавить на завтра
+                    row.addEventListener('click', function(e) {
+                        if (e.target === removeBtn) return;
+                        const name = this.dataset.name;
+                        const tomorrow = new Date();
+                        tomorrow.setDate(tomorrow.getDate() + 1);
+                        const dateStr = tomorrow.toISOString().slice(0, 10);
+                        DishStore.addDish(name, 'planned', dateStr, false);
+                        recOverlay.classList.remove('active');
+                        alert(`✅ Блюдо "${name}" добавлено в план на завтра (${Utils.formatDate(tomorrow)})`);
                     });
-                    saveDishes();
-                    renderCalendar();
-                    recOverlay.classList.remove('active');
-                    alert(`✅ Блюдо "${name}" добавлено в план на завтра (${formatDate(tomorrow)})`);
-                });
 
-                // Кнопка удаления из любимых
-                if (removeBtn) {
+                    // Кнопка удаления из любимых
                     removeBtn.addEventListener('click', function(e) {
                         e.stopPropagation();
                         const id = Number(this.closest('.rec-item').dataset.id);
-                        const dish = dishes.find(d => d.id === id);
+                        const dish = DishStore.getAll().find(d => d.id === id);
                         if (dish) {
-                            dish.liked = false;
-                            saveDishes();
-                            openFavorites(); // обновляем список
+                            DishStore.toggleLike(id);
+                            openFavorites(); // обновить
                         }
                     });
-                }
-            });
-        }
-        recOverlay.classList.add('active');
-    }
 
-    function buildRecModal(liked, others, hint) {
-        let html = '';
-        if (liked.length === 0 && others.length === 0) {
-            html = `<div class="modal-empty">😌 Нет блюд в истории, которые можно было бы предложить.</div>`;
-        } else {
-            if (liked.length > 0) {
-                html += `<div class="rec-section"><h4>❤️ Любимые (давно не готовила)</h4>`;
-                liked.forEach(item => {
-                    const ago = daysAgo(item.lastDate);
-                    html += `
-                        <div class="rec-item" data-name="${item.name}">
-                            <span class="rec-name">${item.name}</span>
-                            <span class="rec-days">последний раз ${ago}</span>
-                        </div>
-                    `;
+                    section.appendChild(row);
                 });
-                html += `</div>`;
+
+                recContent.appendChild(section);
+
+                const hint = document.createElement('div');
+                hint.className = 'rec-hint';
+                hint.textContent = '👆 Кликните по блюду (кроме крестика), чтобы добавить его в план на завтра.\nНажмите ✕, чтобы убрать из любимых.';
+                recContent.appendChild(hint);
             }
-            if (others.length > 0) {
-                html += `<div class="rec-section"><h4>🍽️ Ещё варианты</h4>`;
-                others.forEach(item => {
-                    const ago = daysAgo(item.lastDate);
-                    html += `
-                        <div class="rec-item" data-name="${item.name}">
-                            <span class="rec-name">${item.name}</span>
-                            <span class="rec-days">последний раз ${ago}</span>
-                        </div>
-                    `;
-                });
-                html += `</div>`;
-            }
-            html += `<div class="rec-hint">${hint}</div>`;
+            recOverlay.classList.add('active');
         }
-        recContent.innerHTML = html;
 
-        recContent.querySelectorAll('.rec-item').forEach(item => {
-            item.addEventListener('click', function() {
-                const name = this.dataset.name;
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                const dateStr = tomorrow.toISOString().slice(0, 10);
-                dishes.push({
-                    id: Date.now() + Math.random() * 10000,
-                    name: name,
-                    status: 'planned',
-                    date: dateStr,
-                    liked: false,
-                });
-                saveDishes();
-                renderCalendar();
-                recOverlay.classList.remove('active');
-                alert(`✅ Блюдо "${name}" добавлено в план на завтра (${formatDate(tomorrow)})`);
-            });
-        });
-    }
-
-    recClose.addEventListener('click', () => {
-        recOverlay.classList.remove('active');
-    });
-
-    recOverlay.addEventListener('click', (e) => {
-        if (e.target === e.currentTarget) {
+        function closeRecModal() {
             recOverlay.classList.remove('active');
         }
-    });
 
-    // ——— МОДАЛКА ВЫБОРА "ЧТО ПРИГОТОВИТЬ?" ———
-    const choiceOverlay = document.getElementById('choiceOverlay');
-    const choiceFromMenu = document.getElementById('choiceFromMenu');
-    const choiceFromTaste = document.getElementById('choiceFromTaste');
-    const choiceClose = document.getElementById('choiceClose');
-
-    document.getElementById('suggestBtn').addEventListener('click', () => {
-        choiceOverlay.classList.add('active');
-    });
-
-    function closeChoice() {
-        choiceOverlay.classList.remove('active');
-    }
-
-    choiceClose.addEventListener('click', closeChoice);
-    choiceOverlay.addEventListener('click', (e) => {
-        if (e.target === e.currentTarget) closeChoice();
-    });
-
-    choiceFromMenu.addEventListener('click', function() {
-        closeChoice();
-        openRecommendations();
-    });
-
-    choiceFromTaste.addEventListener('click', function() {
-        closeChoice();
-        alert('✨ Функция «На твой вкус» будет доступна после загрузки ваших любимых блюд.\nЗагрузите их позже в разделе «Любимые».');
-    });
-
-    // ——— КНОПКА "ЛЮБИМЫЕ" ———
-    document.getElementById('favoritesBtn').addEventListener('click', openFavorites);
-
-    // ——— КНОПКА "СЕГОДНЯ" ———
-    document.getElementById('todayBtn').addEventListener('click', function() {
-        currentDate = new Date();
-        renderCalendar();
-    });
-
-    // ——— ДОБАВЛЕНИЕ (глобальная модалка) ———
-    const addModalOverlay = document.getElementById('addModalOverlay');
-    const addModalClose = document.getElementById('addModalClose');
-    const addModalCancel = document.getElementById('addModalCancel');
-    const addModalSave = document.getElementById('addModalSave');
-
-    document.getElementById('addDishBtn').addEventListener('click', () => {
-        const defaultDate = new Date();
-        defaultDate.setDate(defaultDate.getDate() + 1);
-        document.getElementById('newDishDate').value = defaultDate.toISOString().slice(0, 10);
-        document.getElementById('newDishName').value = '';
-        document.getElementById('newDishStatus').value = 'planned';
-        addModalOverlay.classList.add('active');
-    });
-
-    function closeAddModal() {
-        addModalOverlay.classList.remove('active');
-    }
-
-    addModalClose.addEventListener('click', closeAddModal);
-    addModalCancel.addEventListener('click', closeAddModal);
-    addModalOverlay.addEventListener('click', (e) => {
-        if (e.target === e.currentTarget) closeAddModal();
-    });
-
-    addModalSave.addEventListener('click', function() {
-        const nameInput = document.getElementById('newDishName');
-        const dateInput = document.getElementById('newDishDate');
-        const statusSelect = document.getElementById('newDishStatus');
-        const name = nameInput.value.trim();
-        if (!name) {
-            alert('Введи название блюда');
-            return;
-        }
-        let date = dateInput.value;
-        if (!date) {
-            const d = new Date();
-            d.setDate(d.getDate() + 1);
-            date = d.toISOString().slice(0, 10);
-        }
-
-        dishes.push({
-            id: Date.now() + Math.random() * 10000,
-            name: name,
-            status: statusSelect.value,
-            date: date,
-            liked: false,
-        });
-
-        saveDishes();
-        renderCalendar();
-        closeAddModal();
-        nameInput.value = '';
-    });
-
-    // ——— НАВИГАЦИЯ ———
-    function changePeriod(delta) {
-        if (currentView === 'month') {
-            currentDate.setMonth(currentDate.getMonth() + delta);
-        } else {
-            currentDate.setDate(currentDate.getDate() + delta * 7);
-        }
-        renderCalendar();
-    }
-
-    document.getElementById('prevMonth').addEventListener('click', () => changePeriod(-1));
-    document.getElementById('nextMonth').addEventListener('click', () => changePeriod(1));
-
-    // ——— СВАЙП ———
-    let touchStartX = 0;
-    let touchEndX = 0;
-    const wrap = document.getElementById('calendarWrap');
-
-    wrap.addEventListener('touchstart', (e) => {
-        touchStartX = e.changedTouches[0].screenX;
-    }, { passive: true });
-
-    wrap.addEventListener('touchend', (e) => {
-        touchEndX = e.changedTouches[0].screenX;
-        const diff = touchStartX - touchEndX;
-        if (Math.abs(diff) > 50) {
-            changePeriod(diff > 0 ? 1 : -1);
-        }
-    }, { passive: true });
-
-    // Поддержка мыши (drag)
-    let mouseDown = false;
-    let mouseStartX = 0;
-    wrap.addEventListener('mousedown', (e) => {
-        mouseDown = true;
-        mouseStartX = e.screenX;
-    });
-    window.addEventListener('mouseup', (e) => {
-        if (mouseDown) {
-            const diff = mouseStartX - e.screenX;
-            if (Math.abs(diff) > 50) {
-                changePeriod(diff > 0 ? 1 : -1);
+        function buildRecModal(liked, others, hint) {
+            recContent.innerHTML = '';
+            if (liked.length === 0 && others.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'modal-empty';
+                empty.textContent = '😌 Нет блюд в истории, которые можно было бы предложить.';
+                recContent.appendChild(empty);
+                return;
             }
-            mouseDown = false;
+
+            if (liked.length > 0) {
+                const section = document.createElement('div');
+                section.className = 'rec-section';
+                const title = document.createElement('h4');
+                title.textContent = '❤️ Любимые (давно не готовила)';
+                section.appendChild(title);
+                liked.forEach(item => {
+                    const row = document.createElement('div');
+                    row.className = 'rec-item';
+                    row.dataset.name = item.name;
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'rec-name';
+                    nameSpan.textContent = item.name;
+                    row.appendChild(nameSpan);
+                    const daysSpan = document.createElement('span');
+                    daysSpan.className = 'rec-days';
+                    daysSpan.textContent = `последний раз ${Utils.daysAgo(item.lastDate)}`;
+                    row.appendChild(daysSpan);
+                    row.addEventListener('click', function() {
+                        const name = this.dataset.name;
+                        const tomorrow = new Date();
+                        tomorrow.setDate(tomorrow.getDate() + 1);
+                        const dateStr = tomorrow.toISOString().slice(0, 10);
+                        DishStore.addDish(name, 'planned', dateStr, false);
+                        recOverlay.classList.remove('active');
+                        alert(`✅ Блюдо "${name}" добавлено в план на завтра (${Utils.formatDate(tomorrow)})`);
+                    });
+                    section.appendChild(row);
+                });
+                recContent.appendChild(section);
+            }
+
+            if (others.length > 0) {
+                const section = document.createElement('div');
+                section.className = 'rec-section';
+                const title = document.createElement('h4');
+                title.textContent = '🍽️ Ещё варианты';
+                section.appendChild(title);
+                others.forEach(item => {
+                    const row = document.createElement('div');
+                    row.className = 'rec-item';
+                    row.dataset.name = item.name;
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'rec-name';
+                    nameSpan.textContent = item.name;
+                    row.appendChild(nameSpan);
+                    const daysSpan = document.createElement('span');
+                    daysSpan.className = 'rec-days';
+                    daysSpan.textContent = `последний раз ${Utils.daysAgo(item.lastDate)}`;
+                    row.appendChild(daysSpan);
+                    row.addEventListener('click', function() {
+                        const name = this.dataset.name;
+                        const tomorrow = new Date();
+                        tomorrow.setDate(tomorrow.getDate() + 1);
+                        const dateStr = tomorrow.toISOString().slice(0, 10);
+                        DishStore.addDish(name, 'planned', dateStr, false);
+                        recOverlay.classList.remove('active');
+                        alert(`✅ Блюдо "${name}" добавлено в план на завтра (${Utils.formatDate(tomorrow)})`);
+                    });
+                    section.appendChild(row);
+                });
+                recContent.appendChild(section);
+            }
+
+            const hintDiv = document.createElement('div');
+            hintDiv.className = 'rec-hint';
+            hintDiv.textContent = hint;
+            recContent.appendChild(hintDiv);
         }
-    });
 
-    // ——— ПЕРЕКЛЮЧЕНИЕ ВИДОВ ———
-    document.querySelectorAll('#viewToggle button').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('#viewToggle button').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            currentView = this.dataset.view;
-            renderCalendar();
+        // --- Глобальное добавление ---
+        function openAddModal() {
+            const defaultDate = new Date();
+            defaultDate.setDate(defaultDate.getDate() + 1);
+            document.getElementById('newDishDate').value = defaultDate.toISOString().slice(0, 10);
+            document.getElementById('newDishName').value = '';
+            document.getElementById('newDishStatus').value = 'planned';
+            document.getElementById('addModalOverlay').classList.add('active');
+        }
+
+        function closeAddModal() {
+            document.getElementById('addModalOverlay').classList.remove('active');
+        }
+
+        return {
+            renderCalendar,
+            renderMenu,
+            openModal,
+            closeModal,
+            openRecommendations,
+            openFavorites,
+            closeRecModal,
+            openAddModal,
+            closeAddModal,
+            getCurrentDate: () => currentDate,
+            getCurrentView: () => currentView,
+            setCurrentDate: (date) => { currentDate = date; },
+            setCurrentView: (view) => { currentView = view; }
+        };
+    })();
+
+    // ============================================================
+    // 4. Инициализация событий и приложения
+    // ============================================================
+    (function init() {
+        // Инициализация данных
+        DishStore.init();
+
+        // Установка начальных параметров
+        const now = new Date();
+        Renderer.setCurrentDate(now);
+        Renderer.setCurrentView('month');
+
+        // Первый рендер
+        Renderer.renderCalendar('month', now);
+
+        // --- Обработчики навигации ---
+        document.getElementById('prevMonth').addEventListener('click', function() {
+            const curDate = Renderer.getCurrentDate();
+            const view = Renderer.getCurrentView();
+            const newDate = new Date(curDate);
+            if (view === 'month') {
+                newDate.setMonth(newDate.getMonth() - 1);
+            } else {
+                newDate.setDate(newDate.getDate() - 7);
+            }
+            Renderer.setCurrentDate(newDate);
+            Renderer.renderCalendar(view, newDate);
         });
-    });
 
-    // ——— СТАРТ ———
-    initDishes();
-    renderCalendar();
+        document.getElementById('nextMonth').addEventListener('click', function() {
+            const curDate = Renderer.getCurrentDate();
+            const view = Renderer.getCurrentView();
+            const newDate = new Date(curDate);
+            if (view === 'month') {
+                newDate.setMonth(newDate.getMonth() + 1);
+            } else {
+                newDate.setDate(newDate.getDate() + 7);
+            }
+            Renderer.setCurrentDate(newDate);
+            Renderer.renderCalendar(view, newDate);
+        });
+
+        document.getElementById('todayBtn').addEventListener('click', function() {
+            const now = new Date();
+            const view = Renderer.getCurrentView();
+            Renderer.setCurrentDate(now);
+            Renderer.renderCalendar(view, now);
+        });
+
+        // --- Переключение видов ---
+        document.querySelectorAll('#viewToggle button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('#viewToggle button').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                const view = this.dataset.view;
+                Renderer.setCurrentView(view);
+                const curDate = Renderer.getCurrentDate();
+                Renderer.renderCalendar(view, curDate);
+            });
+        });
+
+        // --- Модалка дня ---
+        document.getElementById('modalClose').addEventListener('click', Renderer.closeModal);
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) Renderer.closeModal();
+        });
+
+        // --- Модалка рекомендаций ---
+        document.getElementById('recClose').addEventListener('click', Renderer.closeRecModal);
+        document.getElementById('recOverlay').addEventListener('click', function(e) {
+            if (e.target === this) Renderer.closeRecModal();
+        });
+
+        // --- Кнопка "Что приготовить?" ---
+        document.getElementById('suggestBtn').addEventListener('click', function() {
+            document.getElementById('choiceOverlay').classList.add('active');
+        });
+
+        document.getElementById('choiceClose').addEventListener('click', function() {
+            document.getElementById('choiceOverlay').classList.remove('active');
+        });
+        document.getElementById('choiceOverlay').addEventListener('click', function(e) {
+            if (e.target === this) this.classList.remove('active');
+        });
+
+        document.getElementById('choiceFromMenu').addEventListener('click', function() {
+            document.getElementById('choiceOverlay').classList.remove('active');
+            Renderer.openRecommendations();
+        });
+
+        document.getElementById('choiceFromTaste').addEventListener('click', function() {
+            document.getElementById('choiceOverlay').classList.remove('active');
+            alert('✨ Функция «На твой вкус» будет доступна после загрузки ваших любимых блюд.\nЗагрузите их позже в разделе «Любимые».');
+        });
+
+        // --- Любимые ---
+        document.getElementById('favoritesBtn').addEventListener('click', Renderer.openFavorites);
+
+        // --- Глобальное добавление ---
+        document.getElementById('addDishBtn').addEventListener('click', Renderer.openAddModal);
+
+        document.getElementById('addModalClose').addEventListener('click', Renderer.closeAddModal);
+        document.getElementById('addModalCancel').addEventListener('click', Renderer.closeAddModal);
+        document.getElementById('addModalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) Renderer.closeAddModal();
+        });
+
+        document.getElementById('addModalSave').addEventListener('click', function() {
+            const nameInput = document.getElementById('newDishName');
+            const dateInput = document.getElementById('newDishDate');
+            const statusSelect = document.getElementById('newDishStatus');
+            const name = nameInput.value.trim();
+            if (!name) {
+                alert('Введи название блюда');
+                return;
+            }
+            let date = dateInput.value;
+            if (!date) {
+                const d = new Date();
+                d.setDate(d.getDate() + 1);
+                date = d.toISOString().slice(0, 10);
+            }
+            DishStore.addDish(name, statusSelect.value, date, false);
+            Renderer.closeAddModal();
+            const view = Renderer.getCurrentView();
+            const curDate = Renderer.getCurrentDate();
+            Renderer.renderCalendar(view, curDate);
+            nameInput.value = '';
+        });
+
+        // --- Свайпы ---
+        let touchStartX = 0;
+        let touchEndX = 0;
+        const wrap = document.getElementById('calendarWrap');
+
+        wrap.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        wrap.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            const diff = touchStartX - touchEndX;
+            if (Math.abs(diff) > 50) {
+                const curDate = Renderer.getCurrentDate();
+                const view = Renderer.getCurrentView();
+                const newDate = new Date(curDate);
+                if (view === 'month') {
+                    newDate.setMonth(newDate.getMonth() + (diff > 0 ? 1 : -1));
+                } else {
+                    newDate.setDate(newDate.getDate() + (diff > 0 ? 7 : -7));
+                }
+                Renderer.setCurrentDate(newDate);
+                Renderer.renderCalendar(view, newDate);
+            }
+        }, { passive: true });
+
+        // Поддержка мыши (drag)
+        let mouseDown = false;
+        let mouseStartX = 0;
+        wrap.addEventListener('mousedown', (e) => {
+            mouseDown = true;
+            mouseStartX = e.screenX;
+        });
+        window.addEventListener('mouseup', (e) => {
+            if (mouseDown) {
+                const diff = mouseStartX - e.screenX;
+                if (Math.abs(diff) > 50) {
+                    const curDate = Renderer.getCurrentDate();
+                    const view = Renderer.getCurrentView();
+                    const newDate = new Date(curDate);
+                    if (view === 'month') {
+                        newDate.setMonth(newDate.getMonth() + (diff > 0 ? 1 : -1));
+                    } else {
+                        newDate.setDate(newDate.getDate() + (diff > 0 ? 7 : -7));
+                    }
+                    Renderer.setCurrentDate(newDate);
+                    Renderer.renderCalendar(view, newDate);
+                }
+                mouseDown = false;
+            }
+        });
+
+        console.log('Приложение инициализировано. Все данные защищены от XSS.');
+    })();
 </script>
 </body>
 </html>
