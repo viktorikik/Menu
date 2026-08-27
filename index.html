@@ -279,7 +279,6 @@
       gap: 8px;
     }
 
-    /* ———— стрелки и заголовок ———— */
     .month-nav-wrapper {
       display: flex;
       align-items: center;
@@ -429,7 +428,7 @@
       border-width: 2px;
     }
 
-    /* Недельный вид + Drag&Drop */
+    /* ===== Недельный вид + Drag&Drop ===== */
     .week-list {
       display: flex;
       flex-direction: column;
@@ -512,7 +511,7 @@
       font-style: italic;
     }
 
-    /* Поиск и фильтры */
+    /* ===== Поиск и фильтры ===== */
     .search-filter-wrap {
       display: flex;
       flex-wrap: wrap;
@@ -538,13 +537,8 @@
       border-color: var(--done-color);
       box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15);
     }
-    .search-filter-wrap label {
-      color: var(--text-secondary);
-      font-size: 13px;
-      font-weight: 500;
-    }
 
-    /* Меню */
+    /* ===== Меню ===== */
     .menu-list {
       margin-top: 16px;
       background: rgba(128, 128, 140, 0.04);
@@ -605,7 +599,7 @@
       font-size: 14px;
     }
 
-    /* Модалки */
+    /* ===== Модалки ===== */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -770,11 +764,14 @@
       color: var(--text-primary);
       margin-bottom: 10px;
     }
+
+    /* ===== УЗКИЕ ПОЛЯ В МОДАЛКЕ ДНЯ ===== */
     .modal-add-new {
       display: flex;
-      gap: 8px;
       flex-wrap: wrap;
+      gap: 8px;
       margin-bottom: 14px;
+      align-items: center;
     }
     .modal-add-new input,
     .modal-add-new select {
@@ -785,8 +782,9 @@
       font-size: 14px;
       color: var(--text-primary);
       outline: none;
-      flex: 1 1 120px;
-      min-width: 100px;
+      flex: 1 1 130px;
+      min-width: 90px;
+      max-width: 180px;
     }
     .modal-add-new input:focus,
     .modal-add-new select:focus {
@@ -803,6 +801,7 @@
       font-size: 14px;
       cursor: pointer;
       transition: 0.15s;
+      flex: 0 0 auto;
     }
     .modal-add-new button:hover {
       filter: brightness(1.12);
@@ -907,6 +906,7 @@
       padding-top: 12px;
     }
 
+    /* Глобальная модалка добавления (широкие поля, как было) */
     .add-modal .modal {
       max-width: 400px;
     }
@@ -1044,7 +1044,7 @@
       color: var(--text-primary);
     }
 
-    /* Адаптив */
+    /* ===== Адаптив ===== */
     @media (max-width: 700px) {
       .app { padding: 16px 12px; border-radius: 28px; }
       .day-cell { min-height: 50px; padding: 4px 2px; }
@@ -1067,8 +1067,13 @@
       .week-row .day-col { font-size: 12px; }
       .meal-chip { font-size: 12px; padding: 1px 8px; }
       .modal { padding: 20px 16px; max-width: 100%; }
-      .modal-add-new { flex-direction: column; }
-      .modal-add-new input, .modal-add-new select, .modal-add-new button { width: 100%; }
+      .modal-add-new { flex-direction: column; align-items: stretch; }
+      .modal-add-new input,
+      .modal-add-new select,
+      .modal-add-new button {
+        max-width: 100%;
+        width: 100%;
+      }
       .rec-modal .modal { max-width: 100%; }
 
       .calendar-header {
@@ -1267,31 +1272,25 @@
 
 <script>
   // ============================================================
-  // 1. Утилиты (в т.ч. локальное форматирование даты)
+  // 1. Утилиты
   // ============================================================
   const Utils = {
-    // Безопасное экранирование
     escapeHtml(str) {
       if (!str) return '';
       const div = document.createElement('div');
       div.textContent = str;
       return div.innerHTML;
     },
-
-    // Форматирование даты для отображения
     formatDate(date) {
       const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
       return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
     },
-
-    // Преобразование даты в строку YYYY-MM-DD (локальное время, без UTC смещения)
     formatDateLocal(date) {
       const y = date.getFullYear();
       const m = String(date.getMonth() + 1).padStart(2, '0');
       const d = String(date.getDate()).padStart(2, '0');
       return `${y}-${m}-${d}`;
     },
-
     daysAgo(dateStr) {
       const today = new Date();
       const d = new Date(dateStr);
@@ -1303,8 +1302,6 @@
       if (diff < 30) return `${Math.floor(diff / 7)} недели назад`;
       return `${diff} дней назад`;
     },
-
-    // Определение категории по названию (только для старых данных)
     guessCategory(name) {
       const lower = name.toLowerCase();
       if (lower.includes('суп') || lower.includes('борщ') || lower.includes('пюре') || lower.includes('бульон')) return 'soup';
@@ -1318,7 +1315,6 @@
           lower.includes('каш')) return 'main';
       return 'other';
     },
-
     getWeekDays(baseDate) {
       const start = new Date(baseDate);
       start.setDate(start.getDate() - start.getDay() + 1);
@@ -1330,7 +1326,6 @@
       }
       return week;
     },
-
     createElement(tag, className = '', text = '') {
       const el = document.createElement(tag);
       if (className) el.className = className;
@@ -1340,15 +1335,14 @@
   };
 
   // ============================================================
-  // 2. Хранилище данных (DishStore) с поддержкой категорий
+  // 2. Хранилище данных (DishStore)
   // ============================================================
   const DishStore = (function() {
-    const STORAGE_KEY = 'smartMenuDishes_v4'; // новый ключ, чтобы не смешивать старые данные
+    const STORAGE_KEY = 'smartMenuDishes_v4';
     let dishes = [];
     let cacheUnique = null;
     let cacheRecs = null;
 
-    // Начальные блюда с категориями (заданы вручную)
     const DEFAULT_DISHES = [
       { name: 'Гороховый суп', status: 'done', date: '2026-08-24', category: 'soup' },
       { name: 'Запеканка из фарша и овощей', status: 'done', date: '2026-08-25', category: 'main' },
@@ -1380,7 +1374,6 @@
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length) {
             dishes = parsed;
-            // Для старых записей без категории — добавим её автоматически
             let needSave = false;
             dishes.forEach(d => {
               if (!d.category) {
@@ -1392,9 +1385,7 @@
             return true;
           }
         }
-      } catch (e) {
-        console.warn('Ошибка загрузки данных:', e);
-      }
+      } catch (e) { console.warn('Ошибка загрузки данных:', e); }
       return false;
     }
 
@@ -1403,19 +1394,12 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify(dishes));
         cacheUnique = null;
         cacheRecs = null;
-      } catch (e) {
-        console.error('Ошибка сохранения данных:', e);
-      }
+      } catch (e) { console.error('Ошибка сохранения данных:', e); }
     }
 
     function init() {
       if (!load()) {
-        const result = DEFAULT_DISHES.map((d, i) => ({
-          ...d,
-          id: generateId() + i,
-          liked: false
-        }));
-        // Добавляем несколько блюд без даты (для примера)
+        const result = DEFAULT_DISHES.map((d, i) => ({ ...d, id: generateId() + i, liked: false }));
         const noDate = [
           { name: 'Салат с морской капустой и крабовым мясом', category: 'salad' },
           { name: 'Гречка и салат из свежей капусты как в столовой', category: 'main' },
@@ -1437,11 +1421,8 @@
         dishes = result;
         save();
       }
-      cacheUnique = null;
-      cacheRecs = null;
     }
 
-    // ---- Публичные методы ----
     function editDishName(id, newName) {
       const dish = dishes.find(d => d.id === id);
       if (!dish) return false;
@@ -1450,13 +1431,8 @@
       return true;
     }
 
-    function getAll() {
-      return dishes.slice();
-    }
-
-    function getForDate(dateStr) {
-      return dishes.filter(d => d.date === dateStr);
-    }
+    function getAll() { return dishes.slice(); }
+    function getForDate(dateStr) { return dishes.filter(d => d.date === dateStr); }
 
     function addDish(name, status, date, category, liked = false) {
       if (!name || !status || !date || !category) return false;
@@ -1494,9 +1470,7 @@
       if (cacheUnique) return cacheUnique;
       const map = {};
       dishes.forEach(d => {
-        if (!map[d.name] || d.date > map[d.name]) {
-          map[d.name] = d.date;
-        }
+        if (!map[d.name] || d.date > map[d.name]) map[d.name] = d.date;
       });
       const result = Object.entries(map).map(([name, lastDate]) => ({ name, lastDate }));
       result.sort((a, b) => a.lastDate.localeCompare(b.lastDate));
@@ -1522,41 +1496,23 @@
       return result;
     }
 
-    function getFavorites() {
-      return dishes.filter(d => d.liked);
-    }
-
-    function invalidateCache() {
-      cacheUnique = null;
-      cacheRecs = null;
-    }
+    function getFavorites() { return dishes.filter(d => d.liked); }
+    function invalidateCache() { cacheUnique = null; cacheRecs = null; }
 
     return {
-      init,
-      editDishName,
-      getAll,
-      getForDate,
-      addDish,
-      removeDish,
-      toggleStatus,
-      toggleLike,
-      getUniqueWithLastDate,
-      getRecommendations,
-      getFavorites,
-      invalidateCache
+      init, editDishName, getAll, getForDate, addDish, removeDish,
+      toggleStatus, toggleLike, getUniqueWithLastDate, getRecommendations,
+      getFavorites, invalidateCache
     };
   })();
 
   // ============================================================
-  // 3. Рендерер (с использованием Utils.formatDateLocal)
+  // 3. Рендерер
   // ============================================================
   const Renderer = (function() {
     let currentView = 'month';
     let currentDate = new Date();
-
-    let searchQuery = '';
-    let statusFilter = 'all';
-    let categoryFilter = 'all';
+    let searchQuery = '', statusFilter = 'all', categoryFilter = 'all';
 
     const monthTitle = document.getElementById('monthTitle');
     const calendarContent = document.getElementById('calendarContent');
@@ -1569,76 +1525,57 @@
     const recTitle = document.getElementById('recTitle');
     const recContent = document.getElementById('recContent');
 
-    // ----- Рендер календаря -----
     function renderCalendar(view, date) {
       currentView = view;
       currentDate = date;
-
       const year = date.getFullYear();
       const month = date.getMonth();
-      const monthName = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'][month];
-      monthTitle.textContent = `${monthName} ${year}`;
-
+      monthTitle.textContent = `${['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'][month]} ${year}`;
       calendarContent.innerHTML = '';
-      if (view === 'month') {
-        renderMonthView(year, month);
-      } else {
-        renderWeekView(date);
-      }
+      if (view === 'month') renderMonthView(year, month);
+      else renderWeekView(date);
       renderMenu();
     }
 
     function renderMonthView(year, month) {
       const grid = document.createElement('div');
       grid.className = 'days-grid';
-
       const first = new Date(year, month, 1);
       const last = new Date(year, month + 1, 0);
       const totalDays = last.getDate();
       let startDay = first.getDay() - 1;
       if (startDay < 0) startDay = 6;
-
       for (let i = 0; i < startDay; i++) {
         const empty = document.createElement('div');
         empty.className = 'day-cell empty';
         grid.appendChild(empty);
       }
-
       const today = new Date();
       const todayStr = Utils.formatDateLocal(today);
-
       for (let day = 1; day <= totalDays; day++) {
         const d = new Date(year, month, day);
         const dateStr = Utils.formatDateLocal(d);
         const cell = createDayCell(d, dateStr, todayStr);
         grid.appendChild(cell);
       }
-
       calendarContent.appendChild(grid);
     }
 
     function createDayCell(date, dateStr, todayStr) {
       const cell = document.createElement('div');
       cell.className = 'day-cell';
-
       const dayDishes = DishStore.getForDate(dateStr);
       const hasDone = dayDishes.some(d => d.status === 'done');
       const hasPlanned = dayDishes.some(d => d.status === 'planned');
-
       if (hasDone) cell.classList.add('has-done');
       if (hasPlanned) cell.classList.add('has-planned');
       if (hasDone && hasPlanned) cell.classList.add('has-both');
       if (dateStr === todayStr) cell.classList.add('today');
-
       const numDiv = document.createElement('div');
       numDiv.className = 'day-number';
       numDiv.textContent = date.getDate();
       cell.appendChild(numDiv);
-
-      cell.addEventListener('click', () => {
-        openModal(dateStr);
-      });
-
+      cell.addEventListener('click', () => openModal(dateStr));
       return cell;
     }
 
@@ -1646,30 +1583,23 @@
       const week = Utils.getWeekDays(baseDate);
       const list = document.createElement('div');
       list.className = 'week-list';
-
       const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-
       week.forEach((day, idx) => {
         const dateStr = Utils.formatDateLocal(day);
         const dayDishes = DishStore.getForDate(dateStr);
-
         const row = document.createElement('div');
         row.className = 'week-row';
         row.dataset.date = dateStr;
-
         const dateCol = document.createElement('div');
         dateCol.className = 'date-col';
         dateCol.textContent = day.getDate();
         row.appendChild(dateCol);
-
         const dayCol = document.createElement('div');
         dayCol.className = 'day-col';
         dayCol.textContent = dayNames[idx];
         row.appendChild(dayCol);
-
         const mealsCol = document.createElement('div');
         mealsCol.className = 'meals-col';
-
         if (dayDishes.length === 0) {
           const empty = document.createElement('span');
           empty.className = 'empty-meals';
@@ -1691,35 +1621,26 @@
           });
         }
         row.appendChild(mealsCol);
-
         row.addEventListener('click', (e) => {
           if (e.target.closest('.meal-chip')) return;
           openModal(dateStr);
         });
-
         list.appendChild(row);
       });
-
       calendarContent.appendChild(list);
     }
 
-    // ----- Меню с фильтрацией (использует сохранённую категорию) -----
     function renderMenu() {
-      const view = currentView;
-      menuPeriod.textContent = view === 'month' ? 'месяц' : 'неделю';
-
+      menuPeriod.textContent = currentView === 'month' ? 'месяц' : 'неделю';
       let days = [];
-      if (view === 'month') {
+      if (currentView === 'month') {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
         const last = new Date(year, month + 1, 0);
-        for (let d = 1; d <= last.getDate(); d++) {
-          days.push(new Date(year, month, d));
-        }
+        for (let d = 1; d <= last.getDate(); d++) days.push(new Date(year, month, d));
       } else {
         days = Utils.getWeekDays(currentDate);
       }
-
       let allDishes = [];
       days.forEach(day => {
         const dateStr = Utils.formatDateLocal(day);
@@ -1728,29 +1649,20 @@
           allDishes.push({ ...dish, displayDate: Utils.formatDate(day) });
         });
       });
-
-      // Фильтры
       let filtered = allDishes;
       if (searchQuery.trim()) {
         const q = searchQuery.trim().toLowerCase();
         filtered = filtered.filter(d => d.name.toLowerCase().includes(q));
       }
-      if (statusFilter !== 'all') {
-        filtered = filtered.filter(d => d.status === statusFilter);
-      }
-      if (categoryFilter !== 'all') {
-        filtered = filtered.filter(d => d.category === categoryFilter);
-      }
+      if (statusFilter !== 'all') filtered = filtered.filter(d => d.status === statusFilter);
+      if (categoryFilter !== 'all') filtered = filtered.filter(d => d.category === categoryFilter);
 
       const grouped = {};
       filtered.forEach(dish => {
-        const dateStr = dish.date;
-        if (!grouped[dateStr]) grouped[dateStr] = [];
-        grouped[dateStr].push(dish);
+        if (!grouped[dish.date]) grouped[dish.date] = [];
+        grouped[dish.date].push(dish);
       });
-
       const sortedDates = Object.keys(grouped).sort();
-
       menuContent.innerHTML = '';
       if (sortedDates.length === 0) {
         const empty = document.createElement('div');
@@ -1759,60 +1671,47 @@
         menuContent.appendChild(empty);
         return;
       }
-
       sortedDates.forEach(dateStr => {
         const dayDishes = grouped[dateStr];
         const displayDate = dayDishes[0].displayDate || Utils.formatDate(new Date(dateStr));
-
         const group = document.createElement('div');
         group.className = 'menu-group';
-
         const dateEl = document.createElement('div');
         dateEl.className = 'menu-date';
         dateEl.textContent = displayDate;
         group.appendChild(dateEl);
-
         dayDishes.forEach(dish => {
           let categoryClass = '';
           if (dish.category === 'soup') categoryClass = 'category-soup';
           else if (dish.category === 'salad') categoryClass = 'category-salad';
           else if (dish.category === 'main') categoryClass = 'category-main';
-
           const item = document.createElement('div');
           item.className = `menu-item ${dish.status} ${categoryClass}`;
-
           const nameSpan = document.createElement('span');
           nameSpan.textContent = dish.name;
           item.appendChild(nameSpan);
-
           const badge = document.createElement('span');
           badge.className = 'status-badge';
           badge.textContent = dish.status === 'done' ? '✅' : '📅';
           item.appendChild(badge);
-
           group.appendChild(item);
         });
-
         menuContent.appendChild(group);
       });
     }
 
-    // ----- Модалка дня (с выбором категории при добавлении) -----
+    // ===== Модалка дня =====
     function openModal(dateStr) {
       const d = new Date(dateStr);
       modalDate.textContent = Utils.formatDate(d);
-
       const dayDishes = DishStore.getForDate(dateStr);
       modalContent.innerHTML = '';
 
-      // Список блюд
       const section = document.createElement('div');
       section.className = 'day-meals-section';
-
       const title = document.createElement('h4');
       title.textContent = '📋 Меню на день';
       section.appendChild(title);
-
       if (dayDishes.length === 0) {
         const empty = document.createElement('div');
         empty.className = 'modal-empty';
@@ -1823,21 +1722,17 @@
           const dishDiv = document.createElement('div');
           dishDiv.className = `modal-dish ${dish.status}`;
           if (dish.liked) dishDiv.classList.add('liked');
-
           const nameSpan = document.createElement('span');
           nameSpan.className = 'dish-name';
           nameSpan.textContent = dish.name;
           dishDiv.appendChild(nameSpan);
-
           const actions = document.createElement('div');
           actions.className = 'dish-actions';
-
           const statusSpan = document.createElement('span');
           statusSpan.className = 'dish-status';
           statusSpan.textContent = dish.status === 'done' ? '✅ Готовила' : '📅 Планирую';
           actions.appendChild(statusSpan);
-
-          // Редактирование названия
+          // Редактирование
           const editBtn = document.createElement('button');
           editBtn.className = 'action-btn edit-btn';
           editBtn.textContent = '✎';
@@ -1849,7 +1744,6 @@
             const parentDish = this.closest('.modal-dish');
             const nameSpanEl = parentDish.querySelector('.dish-name');
             const currentName = nameSpanEl.textContent;
-
             const input = document.createElement('input');
             input.type = 'text';
             input.value = currentName;
@@ -1857,7 +1751,6 @@
             nameSpanEl.replaceWith(input);
             input.focus();
             input.select();
-
             const saveEdit = () => {
               const newName = input.value.trim();
               if (newName && newName !== currentName) {
@@ -1871,7 +1764,6 @@
                 input.replaceWith(restoredSpan);
               }
             };
-
             input.addEventListener('blur', saveEdit);
             input.addEventListener('keydown', (e) => {
               if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
@@ -1880,7 +1772,6 @@
           });
           actions.appendChild(editBtn);
 
-          // Лайк
           const likeBtn = document.createElement('button');
           likeBtn.className = `action-btn like-btn ${dish.liked ? 'liked' : ''}`;
           likeBtn.textContent = dish.liked ? '❤️' : '🤍';
@@ -1888,14 +1779,12 @@
           likeBtn.dataset.id = dish.id;
           likeBtn.addEventListener('click', function(e) {
             e.stopPropagation();
-            const id = Number(this.dataset.id);
-            DishStore.toggleLike(id);
+            DishStore.toggleLike(Number(this.dataset.id));
             openModal(dateStr);
             renderCalendar(currentView, currentDate);
           });
           actions.appendChild(likeBtn);
 
-          // Переключение статуса
           const toggleBtn = document.createElement('button');
           toggleBtn.className = 'action-btn toggle-status-btn';
           toggleBtn.textContent = '🔄';
@@ -1903,14 +1792,12 @@
           toggleBtn.dataset.id = dish.id;
           toggleBtn.addEventListener('click', function(e) {
             e.stopPropagation();
-            const id = Number(this.dataset.id);
-            DishStore.toggleStatus(id);
+            DishStore.toggleStatus(Number(this.dataset.id));
             openModal(dateStr);
             renderCalendar(currentView, currentDate);
           });
           actions.appendChild(toggleBtn);
 
-          // Удаление
           const deleteBtn = document.createElement('button');
           deleteBtn.className = 'action-btn delete-btn';
           deleteBtn.textContent = '🗑️';
@@ -1918,9 +1805,8 @@
           deleteBtn.dataset.id = dish.id;
           deleteBtn.addEventListener('click', function(e) {
             e.stopPropagation();
-            const id = Number(this.dataset.id);
             if (confirm('Удалить это блюдо?')) {
-              DishStore.removeDish(id);
+              DishStore.removeDish(Number(this.dataset.id));
               openModal(dateStr);
               renderCalendar(currentView, currentDate);
             }
@@ -1933,10 +1819,9 @@
       }
       modalContent.appendChild(section);
 
-      // Блок добавления с выбором категории
+      // Блок добавления с узкими полями
       const addSection = document.createElement('div');
       addSection.className = 'modal-add-section';
-
       const addTitle = document.createElement('h4');
       addTitle.textContent = '➕ Добавить блюдо';
       addSection.appendChild(addTitle);
@@ -1946,36 +1831,32 @@
 
       const nameInput = document.createElement('input');
       nameInput.type = 'text';
-      nameInput.placeholder = 'Название блюда';
+      nameInput.placeholder = 'Название';
       nameInput.id = 'modalNewDishName';
       addForm.appendChild(nameInput);
 
       const statusSelect = document.createElement('select');
       statusSelect.id = 'modalNewDishStatus';
-      const optPlanned = document.createElement('option');
-      optPlanned.value = 'planned';
-      optPlanned.textContent = '📅 Планирую';
-      statusSelect.appendChild(optPlanned);
-      const optDone = document.createElement('option');
-      optDone.value = 'done';
-      optDone.textContent = '✅ Готовила';
-      statusSelect.appendChild(optDone);
+      ['planned','done'].forEach(val => {
+        const opt = document.createElement('option');
+        opt.value = val;
+        opt.textContent = val === 'planned' ? '📅 Планирую' : '✅ Готовила';
+        statusSelect.appendChild(opt);
+      });
       addForm.appendChild(statusSelect);
 
-      // Выбор категории
       const categorySelect = document.createElement('select');
       categorySelect.id = 'modalNewDishCategory';
-      const catOpts = [
-        { value: 'soup', label: '🍲 Суп' },
-        { value: 'salad', label: '🥗 Салат' },
-        { value: 'main', label: '🍖 Основное' },
-        { value: 'other', label: '🍽️ Другое' }
-      ];
-      catOpts.forEach(opt => {
-        const option = document.createElement('option');
-        option.value = opt.value;
-        option.textContent = opt.label;
-        categorySelect.appendChild(option);
+      [
+        { val: 'soup', label: '🍲 Суп' },
+        { val: 'salad', label: '🥗 Салат' },
+        { val: 'main', label: '🍖 Основное' },
+        { val: 'other', label: '🍽️ Другое' }
+      ].forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat.val;
+        opt.textContent = cat.label;
+        categorySelect.appendChild(opt);
       });
       addForm.appendChild(categorySelect);
 
@@ -1984,7 +1865,7 @@
       addForm.appendChild(addBtn);
       addSection.appendChild(addForm);
 
-      // Предложения из меню
+      // Предложения
       const suggestTitle = document.createElement('h4');
       suggestTitle.textContent = '📖 Выбрать из меню';
       suggestTitle.style.marginTop = '12px';
@@ -1993,11 +1874,9 @@
       const suggestList = document.createElement('div');
       suggestList.className = 'modal-suggest-list';
       suggestList.id = 'modalSuggestList';
-
       const uniqueDishes = DishStore.getUniqueWithLastDate();
       const existingNames = dayDishes.map(d => d.name);
       const available = uniqueDishes.filter(item => !existingNames.includes(item.name));
-
       if (available.length === 0) {
         const noSuggest = document.createElement('div');
         noSuggest.className = 'modal-no-suggest';
@@ -2008,41 +1887,31 @@
           const suggestItem = document.createElement('div');
           suggestItem.className = 'modal-suggest-item';
           suggestItem.dataset.name = item.name;
-
           const nameSpan = document.createElement('span');
           nameSpan.className = 'suggest-name';
           nameSpan.textContent = item.name;
           suggestItem.appendChild(nameSpan);
-
           const lastSpan = document.createElement('span');
           lastSpan.className = 'suggest-last';
           lastSpan.textContent = item.lastDate ? `Последний раз: ${Utils.daysAgo(item.lastDate)}` : 'Никогда не готовила';
           suggestItem.appendChild(lastSpan);
-
           suggestItem.addEventListener('click', function() {
             const name = this.dataset.name;
-            // При добавлении из предложений используем категорию, вычисленную при загрузке (она уже есть у существующих блюд)
-            // Но мы не знаем категорию этого блюда, поэтому можно взять из хранилища (найти по имени)
             const existing = DishStore.getAll().find(d => d.name === name);
             const category = existing ? existing.category : Utils.guessCategory(name);
             DishStore.addDish(name, 'planned', dateStr, category, false);
             openModal(dateStr);
             renderCalendar(currentView, currentDate);
           });
-
           suggestList.appendChild(suggestItem);
         });
       }
       addSection.appendChild(suggestList);
       modalContent.appendChild(addSection);
 
-      // Обработчик кнопки "Добавить"
       addBtn.addEventListener('click', function() {
         const name = nameInput.value.trim();
-        if (!name) {
-          alert('Введи название блюда');
-          return;
-        }
+        if (!name) { alert('Введи название блюда'); return; }
         const status = statusSelect.value;
         const category = categorySelect.value;
         DishStore.addDish(name, status, dateStr, category, false);
@@ -2054,11 +1923,9 @@
       modalOverlay.classList.add('active');
     }
 
-    function closeModal() {
-      modalOverlay.classList.remove('active');
-    }
+    function closeModal() { modalOverlay.classList.remove('active'); }
 
-    // ----- Рекомендации и любимые (без изменений) -----
+    // ----- Рекомендации и любимые -----
     function openRecommendations() {
       recTitle.textContent = '🍽️ Рекомендации';
       const { liked, others } = DishStore.getRecommendations();
@@ -2078,48 +1945,39 @@
       } else {
         const map = {};
         favs.forEach(d => {
-          if (!map[d.name] || d.date > map[d.name]) {
-            map[d.name] = { name: d.name, lastDate: d.date, id: d.id };
-          }
+          if (!map[d.name] || d.date > map[d.name]) map[d.name] = { name: d.name, lastDate: d.date, id: d.id };
         });
         const list = Object.values(map);
         list.sort((a, b) => a.lastDate.localeCompare(b.lastDate));
-
         const section = document.createElement('div');
         section.className = 'rec-section';
         const title = document.createElement('h4');
         title.textContent = 'Все любимые блюда';
         section.appendChild(title);
-
         list.forEach(item => {
           const row = document.createElement('div');
           row.className = 'rec-item';
           row.dataset.id = item.id;
           row.dataset.name = item.name;
-
           const nameSpan = document.createElement('span');
           nameSpan.className = 'rec-name';
           nameSpan.textContent = '❤️ ' + item.name;
           row.appendChild(nameSpan);
-
           const daysSpan = document.createElement('span');
           daysSpan.className = 'rec-days';
           daysSpan.textContent = `последний раз ${Utils.daysAgo(item.lastDate)}`;
           row.appendChild(daysSpan);
-
           const removeBtn = document.createElement('button');
           removeBtn.className = 'rec-remove';
           removeBtn.textContent = '✕';
           removeBtn.title = 'Убрать из любимых';
           row.appendChild(removeBtn);
-
           row.addEventListener('click', function(e) {
             if (e.target === removeBtn) return;
             const name = this.dataset.name;
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             const dateStr = Utils.formatDateLocal(tomorrow);
-            // Находим категорию у существующего блюда
             const existing = DishStore.getAll().find(d => d.name === name);
             const category = existing ? existing.category : Utils.guessCategory(name);
             DishStore.addDish(name, 'planned', dateStr, category, false);
@@ -2127,7 +1985,6 @@
             alert(`✅ Блюдо "${name}" добавлено в план на завтра (${Utils.formatDate(tomorrow)})`);
             renderCalendar(currentView, currentDate);
           });
-
           removeBtn.addEventListener('click', function(e) {
             e.stopPropagation();
             const id = Number(this.closest('.rec-item').dataset.id);
@@ -2138,12 +1995,9 @@
               renderCalendar(currentView, currentDate);
             }
           });
-
           section.appendChild(row);
         });
-
         recContent.appendChild(section);
-
         const hint = document.createElement('div');
         hint.className = 'rec-hint';
         hint.textContent = '👆 Кликните по блюду (кроме крестика), чтобы добавить его в план на завтра.\nНажмите ✕, чтобы убрать из любимых.';
@@ -2152,9 +2006,7 @@
       recOverlay.classList.add('active');
     }
 
-    function closeRecModal() {
-      recOverlay.classList.remove('active');
-    }
+    function closeRecModal() { recOverlay.classList.remove('active'); }
 
     function buildRecModal(liked, others, hint) {
       recContent.innerHTML = '';
@@ -2165,7 +2017,6 @@
         recContent.appendChild(empty);
         return;
       }
-
       const renderSection = (items, titleText) => {
         if (items.length === 0) return null;
         const section = document.createElement('div');
@@ -2201,20 +2052,17 @@
         });
         return section;
       };
-
       const likedSection = renderSection(liked, '❤️ Любимые (давно не готовила)');
       if (likedSection) recContent.appendChild(likedSection);
-
       const othersSection = renderSection(others, '🍽️ Ещё варианты');
       if (othersSection) recContent.appendChild(othersSection);
-
       const hintDiv = document.createElement('div');
       hintDiv.className = 'rec-hint';
       hintDiv.textContent = hint;
       recContent.appendChild(hintDiv);
     }
 
-    // ----- Глобальное добавление с категорией -----
+    // ----- Глобальное добавление -----
     function openAddModal() {
       const defaultDate = new Date();
       defaultDate.setDate(defaultDate.getDate() + 1);
@@ -2224,42 +2072,21 @@
       document.getElementById('newDishCategory').value = 'main';
       document.getElementById('addModalOverlay').classList.add('active');
     }
+    function closeAddModal() { document.getElementById('addModalOverlay').classList.remove('active'); }
 
-    function closeAddModal() {
-      document.getElementById('addModalOverlay').classList.remove('active');
-    }
-
-    // ----- Методы для фильтров -----
-    function setSearchQuery(query) {
-      searchQuery = query;
-      renderMenu();
-    }
-    function setStatusFilter(filter) {
-      statusFilter = filter;
-      renderMenu();
-    }
-    function setCategoryFilter(filter) {
-      categoryFilter = filter;
-      renderMenu();
-    }
+    // ----- Фильтры -----
+    function setSearchQuery(q) { searchQuery = q; renderMenu(); }
+    function setStatusFilter(f) { statusFilter = f; renderMenu(); }
+    function setCategoryFilter(f) { categoryFilter = f; renderMenu(); }
 
     return {
-      renderCalendar,
-      renderMenu,
-      openModal,
-      closeModal,
-      openRecommendations,
-      openFavorites,
-      closeRecModal,
-      openAddModal,
-      closeAddModal,
-      setSearchQuery,
-      setStatusFilter,
-      setCategoryFilter,
+      renderCalendar, renderMenu, openModal, closeModal, openRecommendations,
+      openFavorites, closeRecModal, openAddModal, closeAddModal,
+      setSearchQuery, setStatusFilter, setCategoryFilter,
       getCurrentDate: () => currentDate,
       getCurrentView: () => currentView,
-      setCurrentDate: (date) => { currentDate = date; },
-      setCurrentView: (view) => { currentView = view; }
+      setCurrentDate: (d) => { currentDate = d; },
+      setCurrentView: (v) => { currentView = v; }
     };
   })();
 
@@ -2288,7 +2115,7 @@
       Renderer.setCategoryFilter(this.value);
     });
 
-    // Drag & Drop (глобальный)
+    // Drag & Drop
     let draggedDishId = null, draggedFromDate = null;
     document.addEventListener('dragstart', function(e) {
       const target = e.target.closest('.meal-chip');
@@ -2336,7 +2163,7 @@
       draggedDishId = null; draggedFromDate = null;
     });
 
-    // Остальные обработчики
+    // Навигация
     const now = new Date();
     Renderer.setCurrentDate(now);
     Renderer.setCurrentView('month');
@@ -2479,7 +2306,7 @@
       }
     });
 
-    console.log('✅ Приложение обновлено: исправлена дата, переключатель месяца, категории вручную.');
+    console.log('✅ Все исправления применены: дата, переключатель месяца, категории вручную, компактные поля.');
   })();
 </script>
 </body>
