@@ -2713,15 +2713,17 @@
   // 6. ИНИЦИАЛИЗАЦИЯ
   // ============================================================
   (function init() {
-    // --- Приветственная модалка (только при первом посещении) ---
-    const welcomeSeen = localStorage.getItem('welcomeSeen');
-    if (!welcomeSeen) {
-      // Показываем после небольшой задержки, чтобы DOM успел загрузиться
-      setTimeout(showWelcome, 300);
-    }
+    // --- Приветственная модалка показывается при каждой загрузке (для теста) ---
+    // Если нужно показывать только один раз, раскомментируйте проверку localStorage:
+    // const welcomeSeen = localStorage.getItem('welcomeSeen');
+    // if (!welcomeSeen) {
+    //   setTimeout(showWelcome, 300);
+    // }
+    setTimeout(showWelcome, 300); // Всегда показываем
 
     document.getElementById('welcomeStartBtn').addEventListener('click', function() {
-      localStorage.setItem('welcomeSeen', 'true');
+      // Если хотите запоминать, что пользователь уже видел, раскомментируйте:
+      // localStorage.setItem('welcomeSeen', 'true');
       hideWelcome();
     });
 
@@ -2968,7 +2970,7 @@
       }
     });
 
-    console.log('✅ Приветственная модалка добавлена. Готово!');
+    console.log('✅ Приветственная модалка всегда показывается для теста. Функция "На твой вкус" работает.');
   })();
 </script>
 </body>
