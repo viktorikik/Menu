@@ -41,6 +41,7 @@
             --week-row-bg: rgba(255, 255, 255, 0.3);
             --menu-item-bg: rgba(255, 255, 255, 0.3);
             --suggest-item-bg: rgba(128, 128, 140, 0.06);
+            --rec-item-bg: rgba(128, 128, 140, 0.06);
         }
 
         @media (prefers-color-scheme: dark) {
@@ -73,6 +74,7 @@
                 --week-row-bg: rgba(40, 40, 56, 0.5);
                 --menu-item-bg: rgba(40, 40, 56, 0.5);
                 --suggest-item-bg: rgba(60, 60, 80, 0.4);
+                --rec-item-bg: rgba(60, 60, 80, 0.4);
             }
         }
 
@@ -240,7 +242,7 @@
             filter: brightness(1.08);
         }
 
-        /* ——— КАЛЕНДАРЬ (месяц) ——— */
+        /* ——— КАЛЕНДАРЬ ——— */
         .calendar-wrap {
             background: rgba(128, 128, 140, 0.04);
             border-radius: 28px;
@@ -366,7 +368,7 @@
             border-width: 2px;
         }
 
-        /* ——— НЕДЕЛЬНЫЙ СПИСОК (таблица) ——— */
+        /* ——— НЕДЕЛЯ (таблица) ——— */
         .week-list {
             display: flex;
             flex-direction: column;
@@ -438,7 +440,7 @@
             font-style: italic;
         }
 
-        /* ——— ТЕКСТОВОЕ МЕНЮ (список под календарём) ——— */
+        /* ——— ТЕКСТОВОЕ МЕНЮ ——— */
         .menu-list {
             margin-top: 16px;
             background: rgba(128, 128, 140, 0.04);
@@ -629,7 +631,7 @@
             font-size: 15px;
         }
 
-        /* ——— СЕКЦИЯ ДОБАВЛЕНИЯ В МОДАЛКЕ ——— */
+        /* ——— СЕКЦИЯ ДОБАВЛЕНИЯ В МОДАЛКЕ ДНЯ ——— */
         .modal-add-section {
             margin-top: 20px;
             border-top: 1px solid var(--cell-border);
@@ -732,7 +734,66 @@
             padding: 8px 0;
         }
 
-        /* ——— МОДАЛКА ДОБАВЛЕНИЯ БЛЮДА (глобальная) ——— */
+        /* ——— МОДАЛКА РЕКОМЕНДАЦИЙ ——— */
+        .rec-modal .modal {
+            max-width: 480px;
+        }
+
+        .rec-modal .rec-section {
+            margin-bottom: 16px;
+        }
+
+        .rec-modal .rec-section h4 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .rec-modal .rec-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 14px;
+            background: var(--rec-item-bg);
+            border-radius: 30px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            transition: 0.15s;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .rec-modal .rec-item:hover {
+            background: var(--day-hover);
+        }
+
+        .rec-modal .rec-item .rec-name {
+            font-weight: 500;
+        }
+
+        .rec-modal .rec-item .rec-days {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .rec-modal .rec-empty {
+            color: var(--text-muted);
+            font-size: 14px;
+            font-style: italic;
+            padding: 8px 0;
+        }
+
+        .rec-modal .rec-hint {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 12px;
+            text-align: center;
+            border-top: 1px solid var(--cell-border);
+            padding-top: 12px;
+        }
+
+        /* ——— МОДАЛКА ДОБАВЛЕНИЯ (глобальная) ——— */
         .add-modal .modal {
             max-width: 400px;
         }
@@ -964,6 +1025,7 @@
             .modal { padding: 20px 16px; max-width: 100%; }
             .modal-add-new { flex-direction: column; }
             .modal-add-new input, .modal-add-new select, .modal-add-new button { width: 100%; }
+            .rec-modal .modal { max-width: 100%; }
         }
 
         @media (max-width: 480px) {
@@ -991,6 +1053,7 @@
             .week-row .date-col { font-size: 13px; }
             .week-row .day-col { font-size: 11px; }
             .week-row .meal-chip { font-size: 11px; padding: 1px 6px; }
+            .rec-modal .rec-item { font-size: 13px; padding: 6px 10px; }
         }
 
         @media (min-width: 1000px) {
@@ -1051,7 +1114,18 @@
     </div>
 </div>
 
-<!-- МОДАЛКА ДОБАВЛЕНИЯ БЛЮДА (глобальная) -->
+<!-- МОДАЛКА РЕКОМЕНДАЦИЙ -->
+<div class="modal-overlay rec-modal" id="recOverlay">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>🍽️ Рекомендации</h3>
+            <button class="modal-close" id="recClose">✕</button>
+        </div>
+        <div id="recContent"></div>
+    </div>
+</div>
+
+<!-- МОДАЛКА ДОБАВЛЕНИЯ (глобальная) -->
 <div class="modal-overlay add-modal" id="addModalOverlay">
     <div class="modal">
         <div class="modal-header">
@@ -1176,6 +1250,18 @@
             week.push(d);
         }
         return week;
+    }
+
+    function daysAgo(dateStr) {
+        const today = new Date();
+        const d = new Date(dateStr);
+        const diff = Math.floor((today - d) / (1000 * 60 * 60 * 24));
+        if (diff === 0) return 'сегодня';
+        if (diff === 1) return 'вчера';
+        if (diff < 7) return `${diff} дня назад`;
+        if (diff < 14) return 'неделю назад';
+        if (diff < 30) return `${Math.floor(diff / 7)} недели назад`;
+        return `${diff} дней назад`;
     }
 
     // ——— РЕНДЕР КАЛЕНДАРЯ ———
@@ -1362,31 +1448,6 @@
         container.innerHTML = html;
     }
 
-    // ——— ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ———
-    function getUniqueDishesWithLastDate() {
-        const map = {};
-        dishes.forEach(d => {
-            if (!map[d.name] || d.date > map[d.name]) {
-                map[d.name] = d.date;
-            }
-        });
-        const result = Object.entries(map).map(([name, date]) => ({ name, lastDate: date }));
-        result.sort((a, b) => a.lastDate.localeCompare(b.lastDate));
-        return result;
-    }
-
-    function daysAgo(dateStr) {
-        const today = new Date();
-        const d = new Date(dateStr);
-        const diff = Math.floor((today - d) / (1000 * 60 * 60 * 24));
-        if (diff === 0) return 'сегодня';
-        if (diff === 1) return 'вчера';
-        if (diff < 7) return `${diff} дня назад`;
-        if (diff < 14) return 'неделю назад';
-        if (diff < 30) return `${Math.floor(diff / 7)} недели назад`;
-        return `${diff} дней назад`;
-    }
-
     // ——— МОДАЛКА ДНЯ ———
     function openModal(dateStr) {
         const overlay = document.getElementById('modalOverlay');
@@ -1400,7 +1461,6 @@
 
         let html = '';
 
-        // Список блюд на день
         if (dayDishes.length === 0) {
             html += `<div class="modal-empty">😌 На этот день пока ничего нет</div>`;
         } else {
@@ -1420,7 +1480,7 @@
             });
         }
 
-        // Блок добавления нового блюда
+        // Блок добавления
         html += `
             <div class="modal-add-section">
                 <h4>➕ Добавить блюдо</h4>
@@ -1458,9 +1518,7 @@
 
         content.innerHTML = html;
 
-        // ——— ОБРАБОТЧИКИ ———
-
-        // Лайк
+        // Обработчики
         content.querySelectorAll('.like-btn').forEach(btn => {
             btn.addEventListener('click', function(e) {
                 e.stopPropagation();
@@ -1475,7 +1533,6 @@
             });
         });
 
-        // Переключение статуса
         content.querySelectorAll('.toggle-status-btn').forEach(btn => {
             btn.addEventListener('click', function(e) {
                 e.stopPropagation();
@@ -1490,7 +1547,6 @@
             });
         });
 
-        // Удаление
         content.querySelectorAll('.delete-btn').forEach(btn => {
             btn.addEventListener('click', function(e) {
                 e.stopPropagation();
@@ -1504,7 +1560,6 @@
             });
         });
 
-        // Добавление нового блюда через форму в модалке
         const addBtn = document.getElementById('modalAddDishBtn');
         const nameInput = document.getElementById('modalNewDishName');
         const statusSelect = document.getElementById('modalNewDishStatus');
@@ -1531,7 +1586,6 @@
             });
         }
 
-        // Клик по предложенному блюду из списка
         content.querySelectorAll('.modal-suggest-item').forEach(item => {
             item.addEventListener('click', function() {
                 const name = this.dataset.name;
@@ -1561,7 +1615,182 @@
         }
     });
 
-    // ——— МОДАЛКА ДОБАВЛЕНИЯ БЛЮДА (глобальная) ———
+    // ——— ВСПОМОГАТЕЛЬНЫЕ ДЛЯ РЕКОМЕНДАЦИЙ ———
+    function getUniqueDishesWithLastDate() {
+        const map = {};
+        dishes.forEach(d => {
+            if (!map[d.name] || d.date > map[d.name]) {
+                map[d.name] = d.date;
+            }
+        });
+        const result = Object.entries(map).map(([name, date]) => ({ name, lastDate: date }));
+        result.sort((a, b) => a.lastDate.localeCompare(b.lastDate));
+        return result;
+    }
+
+    function getRecommendations() {
+        // Берём только те, что готовила (done)
+        const doneDishes = dishes.filter(d => d.status === 'done');
+        // Группируем по имени, берём последнюю дату
+        const map = {};
+        doneDishes.forEach(d => {
+            if (!map[d.name] || d.date > map[d.name]) {
+                map[d.name] = { name: d.name, lastDate: d.date, liked: d.liked };
+            }
+        });
+        const unique = Object.values(map);
+        // Сортируем по дате (старые вперёд)
+        unique.sort((a, b) => a.lastDate.localeCompare(b.lastDate));
+
+        // Отделяем любимые
+        const liked = unique.filter(item => item.liked);
+        const others = unique.filter(item => !item.liked);
+
+        // Берём до 3 любимых
+        const topLiked = liked.slice(0, 3);
+        // Берём до 5 остальных, исключая уже выбранные имена (если пересекаются — но они не пересекаются)
+        const topOthers = others.slice(0, 5);
+
+        return { liked: topLiked, others: topOthers };
+    }
+
+    // ——— МОДАЛКА РЕКОМЕНДАЦИЙ ———
+    const recOverlay = document.getElementById('recOverlay');
+    const recClose = document.getElementById('recClose');
+    const recContent = document.getElementById('recContent');
+
+    function openRecommendations() {
+        const { liked, others } = getRecommendations();
+
+        let html = '';
+
+        if (liked.length === 0 && others.length === 0) {
+            html = `<div class="modal-empty">😌 Нет блюд в истории, которые можно было бы предложить.</div>`;
+        } else {
+            // Любимые
+            if (liked.length > 0) {
+                html += `<div class="rec-section"><h4>❤️ Любимые (давно не готовила)</h4>`;
+                liked.forEach(item => {
+                    const ago = daysAgo(item.lastDate);
+                    html += `
+                        <div class="rec-item" data-name="${item.name}">
+                            <span class="rec-name">${item.name}</span>
+                            <span class="rec-days">последний раз ${ago}</span>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+
+            // Остальные
+            if (others.length > 0) {
+                html += `<div class="rec-section"><h4>🍽️ Ещё варианты</h4>`;
+                others.forEach(item => {
+                    const ago = daysAgo(item.lastDate);
+                    html += `
+                        <div class="rec-item" data-name="${item.name}">
+                            <span class="rec-name">${item.name}</span>
+                            <span class="rec-days">последний раз ${ago}</span>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+
+            html += `<div class="rec-hint">👆 Кликните по блюду, чтобы добавить его в план на завтра</div>`;
+        }
+
+        recContent.innerHTML = html;
+
+        // Обработчики клика по блюду — добавить на завтра
+        recContent.querySelectorAll('.rec-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const name = this.dataset.name;
+                // Добавляем на завтра
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const dateStr = tomorrow.toISOString().slice(0, 10);
+                dishes.push({
+                    id: Date.now() + Math.random() * 10000,
+                    name: name,
+                    status: 'planned',
+                    date: dateStr,
+                    liked: false,
+                });
+                saveDishes();
+                renderCalendar();
+                // Закрываем рекомендации
+                recOverlay.classList.remove('active');
+                // Показываем уведомление
+                alert(`✅ Блюдо "${name}" добавлено в план на завтра (${formatDate(tomorrow)})`);
+            });
+        });
+
+        recOverlay.classList.add('active');
+    }
+
+    recClose.addEventListener('click', () => {
+        recOverlay.classList.remove('active');
+    });
+
+    recOverlay.addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) {
+            recOverlay.classList.remove('active');
+        }
+    });
+
+    // ——— МОДАЛКА ВЫБОРА "ЧТО ПРИГОТОВИТЬ?" ———
+    const choiceOverlay = document.getElementById('choiceOverlay');
+    const choiceFromMenu = document.getElementById('choiceFromMenu');
+    const choiceFromTaste = document.getElementById('choiceFromTaste');
+    const choiceClose = document.getElementById('choiceClose');
+
+    document.getElementById('suggestBtn').addEventListener('click', () => {
+        choiceOverlay.classList.add('active');
+    });
+
+    function closeChoice() {
+        choiceOverlay.classList.remove('active');
+    }
+
+    choiceClose.addEventListener('click', closeChoice);
+    choiceOverlay.addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeChoice();
+    });
+
+    choiceFromMenu.addEventListener('click', function() {
+        closeChoice();
+        openRecommendations();
+    });
+
+    choiceFromTaste.addEventListener('click', function() {
+        closeChoice();
+        alert('✨ Функция «На твой вкус» будет доступна после загрузки ваших любимых блюд.\nЗагрузите их позже в разделе «Любимые».');
+    });
+
+    // ——— БЛОК ЛЮБИМЫХ ———
+    document.getElementById('favoritesToggle').addEventListener('click', function() {
+        showFavorites = !showFavorites;
+        const section = document.getElementById('favoritesSection');
+        section.classList.toggle('active', showFavorites);
+        if (showFavorites) updateFavorites();
+    });
+
+    function updateFavorites() {
+        const container = document.getElementById('favoritesList');
+        const favs = dishes.filter(d => d.liked);
+        if (favs.length === 0) {
+            container.innerHTML = '<span style="color: var(--text-muted); font-size: 14px;">Нет любимых блюд</span>';
+        } else {
+            container.innerHTML = favs.map(d => `
+                <span class="fav-item">
+                    <span class="heart">❤️</span> ${d.name}
+                </span>
+            `).join('');
+        }
+    }
+
+    // ——— ДОБАВЛЕНИЕ (глобальная модалка) ———
     const addModalOverlay = document.getElementById('addModalOverlay');
     const addModalClose = document.getElementById('addModalClose');
     const addModalCancel = document.getElementById('addModalCancel');
@@ -1616,107 +1845,6 @@
         closeAddModal();
         nameInput.value = '';
     });
-
-    // ——— МОДАЛКА ВЫБОРА "ЧТО ПРИГОТОВИТЬ?" ———
-    const choiceOverlay = document.getElementById('choiceOverlay');
-    const choiceFromMenu = document.getElementById('choiceFromMenu');
-    const choiceFromTaste = document.getElementById('choiceFromTaste');
-    const choiceClose = document.getElementById('choiceClose');
-
-    document.getElementById('suggestBtn').addEventListener('click', () => {
-        choiceOverlay.classList.add('active');
-    });
-
-    function closeChoice() {
-        choiceOverlay.classList.remove('active');
-    }
-
-    choiceClose.addEventListener('click', closeChoice);
-    choiceOverlay.addEventListener('click', (e) => {
-        if (e.target === e.currentTarget) closeChoice();
-    });
-
-    choiceFromMenu.addEventListener('click', function() {
-        closeChoice();
-        const result = suggestDish();
-        if (result.dish) {
-            alert(`🍽️ Предлагаю: ${result.dish.name}\n\n${result.reason}`);
-        } else {
-            alert(`❌ ${result.reason}`);
-        }
-    });
-
-    choiceFromTaste.addEventListener('click', function() {
-        closeChoice();
-        alert('✨ Функция «На твой вкус» будет доступна после загрузки ваших любимых блюд.\nЗагрузите их позже в разделе «Любимые».');
-    });
-
-    // ——— ЛОГИКА ПРЕДЛОЖЕНИЯ ———
-    function suggestDish() {
-        const doneDishes = dishes.filter(d => d.status === 'done');
-        if (doneDishes.length === 0) {
-            const planned = dishes.filter(d => d.status === 'planned');
-            if (planned.length > 0) {
-                const random = planned[Math.floor(Math.random() * planned.length)];
-                return { dish: random, reason: 'Нет истории, но есть план! 😉' };
-            }
-            return { dish: null, reason: 'Добавь блюда!' };
-        }
-
-        const lastCooked = {};
-        doneDishes.forEach(d => {
-            if (!lastCooked[d.name] || d.date > lastCooked[d.name]) {
-                lastCooked[d.name] = d.date;
-            }
-        });
-
-        let oldestName = null;
-        let oldestDate = null;
-        for (const [name, date] of Object.entries(lastCooked)) {
-            if (!oldestDate || date < oldestDate) {
-                oldestDate = date;
-                oldestName = name;
-            }
-        }
-
-        const candidate = doneDishes.find(d => d.name === oldestName && d.date === oldestDate);
-        if (candidate) {
-            const today = new Date();
-            const lastDate = new Date(candidate.date);
-            const diffDays = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
-            let reason = `Не готовила "${candidate.name}" ${diffDays} дн.`;
-            if (diffDays > 30) reason = `🔥 Давно не было "${candidate.name}" (${diffDays} дн.)!`;
-            else if (diffDays > 14) reason = `⏳ "${candidate.name}" ждал ${diffDays} дн.`;
-            else reason = `🥘 "${candidate.name}" — отличный вариант (${diffDays} дн.)`;
-            return { dish: candidate, reason };
-        }
-
-        const fallback = dishes[Math.floor(Math.random() * dishes.length)];
-        if (fallback) return { dish: fallback, reason: 'Попробуй что-то новенькое!' };
-        return { dish: null, reason: 'Добавь блюда!' };
-    }
-
-    // ——— БЛОК ЛЮБИМЫХ ———
-    document.getElementById('favoritesToggle').addEventListener('click', function() {
-        showFavorites = !showFavorites;
-        const section = document.getElementById('favoritesSection');
-        section.classList.toggle('active', showFavorites);
-        if (showFavorites) updateFavorites();
-    });
-
-    function updateFavorites() {
-        const container = document.getElementById('favoritesList');
-        const favs = dishes.filter(d => d.liked);
-        if (favs.length === 0) {
-            container.innerHTML = '<span style="color: var(--text-muted); font-size: 14px;">Нет любимых блюд</span>';
-        } else {
-            container.innerHTML = favs.map(d => `
-                <span class="fav-item">
-                    <span class="heart">❤️</span> ${d.name}
-                </span>
-            `).join('');
-        }
-    }
 
     // ——— НАВИГАЦИЯ ———
     function changePeriod(delta) {
