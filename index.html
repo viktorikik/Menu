@@ -217,6 +217,27 @@
             color: var(--liked-color);
         }
 
+        .add-dish-btn {
+            background: var(--done-color);
+            border: none;
+            padding: 8px 18px;
+            border-radius: 40px;
+            color: white;
+            font-size: 14px;
+            font-weight: 580;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.2s;
+            box-shadow: 0 4px 12px rgba(52, 211, 153, 0.3);
+        }
+
+        .add-dish-btn:hover {
+            transform: scale(1.05);
+            filter: brightness(1.08);
+        }
+
         /* ——— КАЛЕНДАРЬ (месяц) ——— */
         .calendar-wrap {
             background: rgba(128, 128, 140, 0.04);
@@ -584,6 +605,78 @@
             font-size: 15px;
         }
 
+        /* ——— МОДАЛКА ДОБАВЛЕНИЯ БЛЮДА ——— */
+        .add-modal .modal {
+            max-width: 400px;
+        }
+
+        .add-modal .form-group {
+            margin-bottom: 16px;
+        }
+
+        .add-modal .form-group label {
+            display: block;
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .add-modal .form-group input,
+        .add-modal .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 40px;
+            border: 1px solid var(--cell-border);
+            background: var(--input-bg);
+            font-size: 15px;
+            color: var(--text-primary);
+            outline: none;
+            transition: 0.15s;
+        }
+
+        .add-modal .form-group input:focus,
+        .add-modal .form-group select:focus {
+            border-color: var(--done-color);
+            box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15);
+        }
+
+        .add-modal .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .add-modal .form-actions button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 60px;
+            font-size: 16px;
+            font-weight: 550;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .add-modal .form-actions .btn-primary {
+            background: var(--btn-bg);
+            color: var(--btn-text);
+        }
+
+        .add-modal .form-actions .btn-primary:hover {
+            filter: brightness(1.12);
+        }
+
+        .add-modal .form-actions .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--text-muted);
+            color: var(--text-primary);
+        }
+
+        .add-modal .form-actions .btn-secondary:hover {
+            background: var(--cell-bg);
+        }
+
         /* ——— МОДАЛКА ВЫБОРА "ЧТО ПРИГОТОВИТЬ?" ——— */
         .choice-overlay {
             display: none;
@@ -713,104 +806,6 @@
             color: var(--liked-color);
         }
 
-        /* ——— БИБЛИОТЕКА ——— */
-        .dish-library {
-            margin-top: 18px;
-            background: rgba(128, 128, 140, 0.04);
-            border-radius: 24px;
-            padding: 14px 16px 12px;
-        }
-
-        .dish-library h3 {
-            font-weight: 540;
-            font-size: 15px;
-            color: var(--text-primary);
-            margin-bottom: 10px;
-        }
-
-        .dish-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-bottom: 10px;
-        }
-
-        .dish-tag {
-            background: var(--tag-bg);
-            padding: 5px 12px;
-            border-radius: 30px;
-            font-size: 13px;
-            border: 1px solid rgba(128, 128, 140, 0.06);
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--text-primary);
-        }
-
-        .dish-tag .remove-dish {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            font-size: 14px;
-            padding: 0 2px;
-        }
-        .dish-tag .remove-dish:hover {
-            color: #e55a5a;
-        }
-
-        .add-dish-form {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-
-        .add-dish-form input,
-        .add-dish-form select {
-            padding: 8px 14px;
-            border-radius: 40px;
-            border: 1px solid rgba(128, 128, 140, 0.12);
-            background: var(--input-bg);
-            font-size: 13px;
-            outline: none;
-            color: var(--text-primary);
-            flex: 1 1 auto;
-            min-width: 100px;
-        }
-
-        .add-dish-form input::placeholder {
-            color: var(--text-muted);
-        }
-        .add-dish-form input:focus {
-            border-color: var(--done-color);
-            box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15);
-        }
-
-        .add-dish-form input[type="date"] {
-            flex: 0 1 140px;
-            min-width: 100px;
-        }
-
-        .add-dish-form select {
-            flex: 0 1 120px;
-        }
-
-        .add-dish-form button {
-            background: var(--btn-bg);
-            border: none;
-            padding: 8px 18px;
-            border-radius: 40px;
-            color: var(--btn-text);
-            font-weight: 550;
-            font-size: 13px;
-            cursor: pointer;
-            transition: 0.15s;
-            flex: 0 0 auto;
-        }
-        .add-dish-form button:hover {
-            filter: brightness(1.12);
-        }
-
         .hint {
             font-size: 11px;
             color: var(--text-muted);
@@ -827,6 +822,7 @@
             .logo h1 { font-size: 22px; text-align: center; }
             .logo span { display: inline-block; }
             .what-cook-btn { font-size: 15px; padding: 10px 20px; }
+            .add-dish-btn { font-size: 13px; padding: 6px 14px; }
             .choice-modal { padding: 24px 18px; }
             .choice-modal .choice-btn { font-size: 16px; padding: 12px 16px; }
 
@@ -851,9 +847,7 @@
             .controls .view-toggle button { font-size: 11px; padding: 4px 10px; }
             .what-cook-btn { font-size: 14px; padding: 8px 16px; }
             .favorites-btn { font-size: 12px; padding: 6px 12px; }
-            .add-dish-form input,
-            .add-dish-form select { font-size: 12px; padding: 6px 10px; min-width: 70px; }
-            .add-dish-form button { font-size: 12px; padding: 6px 14px; }
+            .add-dish-btn { font-size: 12px; padding: 5px 12px; }
             .modal { padding: 16px 12px; border-radius: 24px; }
             .modal-dish { font-size: 13px; padding: 8px 12px; }
             .choice-modal h2 { font-size: 20px; }
@@ -899,6 +893,9 @@
         <button class="favorites-btn" id="favoritesToggle">
             <span class="heart">❤️</span> Любимые
         </button>
+        <button class="add-dish-btn" id="addDishBtn">
+            ➕ Добавить блюдо
+        </button>
     </div>
 
     <!-- КАЛЕНДАРЬ (контейнер) -->
@@ -922,22 +919,6 @@
         <h3>❤️ Любимые блюда</h3>
         <div class="favorites-list" id="favoritesList"></div>
     </div>
-
-    <!-- БИБЛИОТЕКА -->
-    <div class="dish-library">
-        <h3>📚 Все блюда</h3>
-        <div class="dish-tags" id="dishTagsContainer"></div>
-        <div class="add-dish-form">
-            <input type="text" id="newDishInput" placeholder="Название блюда">
-            <input type="date" id="newDishDate">
-            <select id="newDishStatus">
-                <option value="done">✅ Готовила</option>
-                <option value="planned">📅 Планирую</option>
-            </select>
-            <button id="addDishBtn">➕</button>
-        </div>
-        <div class="hint">Кликни по дню в календаре или по строке в недельном списке — увидишь все блюда на эту дату</div>
-    </div>
 </div>
 
 <!-- МОДАЛКА ДНЯ -->
@@ -948,6 +929,35 @@
             <button class="modal-close" id="modalClose">✕</button>
         </div>
         <div id="modalContent"></div>
+    </div>
+</div>
+
+<!-- МОДАЛКА ДОБАВЛЕНИЯ БЛЮДА -->
+<div class="modal-overlay add-modal" id="addModalOverlay">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>➕ Новое блюдо</h3>
+            <button class="modal-close" id="addModalClose">✕</button>
+        </div>
+        <div class="form-group">
+            <label for="newDishName">Название блюда</label>
+            <input type="text" id="newDishName" placeholder="Например, Плов">
+        </div>
+        <div class="form-group">
+            <label for="newDishDate">Дата</label>
+            <input type="date" id="newDishDate">
+        </div>
+        <div class="form-group">
+            <label for="newDishStatus">Статус</label>
+            <select id="newDishStatus">
+                <option value="done">✅ Уже готовила</option>
+                <option value="planned">📅 Планирую</option>
+            </select>
+        </div>
+        <div class="form-actions">
+            <button class="btn-secondary" id="addModalCancel">Отмена</button>
+            <button class="btn-primary" id="addModalSave">Сохранить</button>
+        </div>
     </div>
 </div>
 
@@ -1066,7 +1076,7 @@
             renderWeekView(container);
         }
 
-        updateMenu();        // обновляем текстовое меню
+        updateMenu();
         updateFavorites();
     }
 
@@ -1287,6 +1297,64 @@
         }
     });
 
+    // ——— МОДАЛКА ДОБАВЛЕНИЯ БЛЮДА ———
+    const addModalOverlay = document.getElementById('addModalOverlay');
+    const addModalClose = document.getElementById('addModalClose');
+    const addModalCancel = document.getElementById('addModalCancel');
+    const addModalSave = document.getElementById('addModalSave');
+
+    document.getElementById('addDishBtn').addEventListener('click', () => {
+        // Устанавливаем дату по умолчанию (завтра)
+        const defaultDate = new Date();
+        defaultDate.setDate(defaultDate.getDate() + 1);
+        document.getElementById('newDishDate').value = defaultDate.toISOString().slice(0, 10);
+        document.getElementById('newDishName').value = '';
+        document.getElementById('newDishStatus').value = 'planned';
+        addModalOverlay.classList.add('active');
+    });
+
+    function closeAddModal() {
+        addModalOverlay.classList.remove('active');
+    }
+
+    addModalClose.addEventListener('click', closeAddModal);
+    addModalCancel.addEventListener('click', closeAddModal);
+    addModalOverlay.addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeAddModal();
+    });
+
+    addModalSave.addEventListener('click', function() {
+        const nameInput = document.getElementById('newDishName');
+        const dateInput = document.getElementById('newDishDate');
+        const statusSelect = document.getElementById('newDishStatus');
+        const name = nameInput.value.trim();
+        if (!name) {
+            alert('Введи название блюда');
+            return;
+        }
+        let date = dateInput.value;
+        if (!date) {
+            const d = new Date();
+            d.setDate(d.getDate() + 1);
+            date = d.toISOString().slice(0, 10);
+        }
+
+        dishes.push({
+            id: Date.now() + Math.random() * 10000,
+            name: name,
+            status: statusSelect.value,
+            date: date,
+            liked: false,
+        });
+
+        saveDishes();
+        renderCalendar();
+        updateFavorites();
+        closeAddModal();
+        // Очищаем поля
+        nameInput.value = '';
+    });
+
     // ——— МОДАЛКА ВЫБОРА "ЧТО ПРИГОТОВИТЬ?" ———
     const choiceOverlay = document.getElementById('choiceOverlay');
     const choiceFromMenu = document.getElementById('choiceFromMenu');
@@ -1388,32 +1456,6 @@
         }
     }
 
-    // ——— БИБЛИОТЕКА ТЕГОВ ———
-    function renderTags() {
-        const container = document.getElementById('dishTagsContainer');
-        container.innerHTML = '';
-        const sorted = [...dishes].sort((a, b) => a.name.localeCompare(b.name));
-        sorted.forEach(d => {
-            const tag = document.createElement('span');
-            tag.className = 'dish-tag';
-            const icon = d.status === 'done' ? '✅' : '📅';
-            const heart = d.liked ? '❤️' : '';
-            tag.innerHTML = `${icon} ${d.name} ${heart} <button class="remove-dish" data-id="${d.id}">✕</button>`;
-            container.appendChild(tag);
-        });
-
-        document.querySelectorAll('.remove-dish').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const id = Number(this.dataset.id);
-                dishes = dishes.filter(d => d.id !== id);
-                saveDishes();
-                renderTags();
-                renderCalendar();
-                updateFavorites();
-            });
-        });
-    }
-
     // ——— НАВИГАЦИЯ ———
     function changePeriod(delta) {
         if (currentView === 'month') {
@@ -1471,49 +1513,10 @@
         });
     });
 
-    // ——— ДОБАВЛЕНИЕ БЛЮДА ———
-    document.getElementById('addDishBtn').addEventListener('click', function() {
-        const input = document.getElementById('newDishInput');
-        const dateInput = document.getElementById('newDishDate');
-        const statusSelect = document.getElementById('newDishStatus');
-        const name = input.value.trim();
-        if (!name) {
-            alert('Введи название блюда');
-            return;
-        }
-
-        let date = dateInput.value;
-        if (!date) {
-            const d = new Date();
-            d.setDate(d.getDate() + 1);
-            date = d.toISOString().slice(0, 10);
-        }
-
-        dishes.push({
-            id: Date.now() + Math.random() * 10000,
-            name: name,
-            status: statusSelect.value,
-            date: date,
-            liked: false,
-        });
-
-        input.value = '';
-        dateInput.value = '';
-        saveDishes();
-        renderTags();
-        renderCalendar();
-        updateFavorites();
-    });
-
     // ——— СТАРТ ———
     initDishes();
     renderCalendar();
-    renderTags();
     updateFavorites();
-
-    const defaultDate = new Date();
-    defaultDate.setDate(defaultDate.getDate() + 1);
-    document.getElementById('newDishDate').value = defaultDate.toISOString().slice(0, 10);
 </script>
 </body>
 </html>
