@@ -38,6 +38,7 @@
             --day-hover: rgba(0, 0, 0, 0.04);
             --modal-text: #1c1c2a;
             --chip-bg: rgba(255, 255, 255, 0.7);
+            --week-row-bg: rgba(255, 255, 255, 0.3);
         }
 
         @media (prefers-color-scheme: dark) {
@@ -67,6 +68,7 @@
                 --day-hover: rgba(255, 255, 255, 0.05);
                 --modal-text: #ececf0;
                 --chip-bg: rgba(45, 45, 65, 0.7);
+                --week-row-bg: rgba(40, 40, 56, 0.5);
             }
         }
 
@@ -213,7 +215,7 @@
             color: var(--liked-color);
         }
 
-        /* ——— КАЛЕНДАРЬ ——— */
+        /* ——— КАЛЕНДАРЬ (месяц) ——— */
         .calendar-wrap {
             background: rgba(128, 128, 140, 0.04);
             border-radius: 28px;
@@ -275,6 +277,7 @@
             gap: 4px;
         }
 
+        /* Ячейки для месяца */
         .day-cell {
             border-radius: 18px;
             display: flex;
@@ -339,56 +342,74 @@
             border-width: 2px;
         }
 
-        /* ——— ЧИПСЫ БЛЮД В ЯЧЕЙКЕ (для недели) ——— */
-        .meal-chips {
+        /* ——— НЕДЕЛЬНЫЙ СПИСОК ——— */
+        .week-list {
             display: flex;
             flex-direction: column;
-            gap: 2px;
-            width: 100%;
-            max-height: 60px;
-            overflow: hidden;
-            transition: max-height 0.3s;
+            gap: 6px;
+            padding: 4px 0;
         }
 
-        .meal-chip {
-            background: var(--chip-bg);
-            border-radius: 12px;
-            padding: 2px 8px;
-            font-size: 11px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            border-left: 2px solid var(--text-muted);
+        .week-row {
+            display: grid;
+            grid-template-columns: 70px 1fr 2fr;
+            gap: 12px;
+            align-items: center;
+            background: var(--week-row-bg);
+            border-radius: 16px;
+            padding: 10px 14px;
+            border: 1px solid var(--cell-border);
             cursor: pointer;
-            transition: all 0.2s;
-            color: var(--text-primary);
-            display: block;
-            width: 100%;
-            text-align: left;
+            transition: 0.15s;
         }
 
-        .meal-chip.done {
+        .week-row:hover {
+            background: var(--day-hover);
+        }
+
+        .week-row .date-col {
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--text-primary);
+        }
+
+        .week-row .day-col {
+            font-weight: 500;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .week-row .meals-col {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 8px;
+        }
+
+        .week-row .meal-chip {
+            font-size: 13px;
+            padding: 2px 10px;
+            border-radius: 30px;
+            background: var(--chip-bg);
+            border-left: 3px solid var(--text-muted);
+            color: var(--text-primary);
+            white-space: nowrap;
+        }
+
+        .week-row .meal-chip.done {
             border-left-color: var(--done-color);
         }
-        .meal-chip.planned {
+        .week-row .meal-chip.planned {
             border-left-color: var(--planned-color);
         }
-        .meal-chip.liked {
+        .week-row .meal-chip.liked {
             border-left-color: var(--liked-color);
-            background: rgba(239, 68, 68, 0.1);
+            background: rgba(239, 68, 68, 0.08);
         }
 
-        .meal-chip.expanded {
-            font-size: 14px;
-            white-space: normal;
-            overflow: visible;
-            padding: 4px 10px;
-            background: var(--tag-bg);
-            border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            z-index: 5;
-            position: relative;
-            border-left-width: 4px;
+        .week-row .empty-meals {
+            color: var(--text-muted);
+            font-size: 13px;
+            font-style: italic;
         }
 
         /* ——— МОДАЛКА ДНЯ ——— */
@@ -746,6 +767,15 @@
             .what-cook-btn { font-size: 15px; padding: 10px 20px; }
             .choice-modal { padding: 24px 18px; }
             .choice-modal .choice-btn { font-size: 16px; padding: 12px 16px; }
+
+            .week-row {
+                grid-template-columns: 50px 1fr 1.5fr;
+                gap: 8px;
+                padding: 8px 12px;
+            }
+            .week-row .date-col { font-size: 14px; }
+            .week-row .day-col { font-size: 12px; }
+            .week-row .meal-chip { font-size: 12px; padding: 1px 8px; }
         }
 
         @media (max-width: 480px) {
@@ -764,9 +794,18 @@
             .add-dish-form button { font-size: 12px; padding: 6px 14px; }
             .modal { padding: 16px 12px; border-radius: 24px; }
             .modal-dish { font-size: 13px; padding: 8px 12px; }
-            .meal-chip { font-size: 10px; padding: 1px 6px; }
-            .meal-chip.expanded { font-size: 12px; padding: 3px 8px; }
             .choice-modal h2 { font-size: 20px; }
+
+            .week-row {
+                grid-template-columns: 1fr 1fr 2fr;
+                gap: 4px;
+                padding: 6px 8px;
+                border-radius: 12px;
+                font-size: 12px;
+            }
+            .week-row .date-col { font-size: 13px; }
+            .week-row .day-col { font-size: 11px; }
+            .week-row .meal-chip { font-size: 11px; padding: 1px 6px; }
         }
 
         @media (min-width: 1000px) {
@@ -801,17 +840,14 @@
         </button>
     </div>
 
-    <!-- КАЛЕНДАРЬ -->
+    <!-- КАЛЕНДАРЬ (контейнер) -->
     <div class="calendar-wrap" id="calendarWrap">
         <div class="calendar-header">
             <button class="month-nav" id="prevMonth">‹</button>
             <h2 id="monthTitle">Август 2026</h2>
             <button class="month-nav" id="nextMonth">›</button>
         </div>
-        <div class="weekdays">
-            <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div>
-        </div>
-        <div class="days-grid" id="calendarGrid"></div>
+        <div id="calendarContent"></div>
     </div>
 
     <!-- БЛОК ЛЮБИМЫХ -->
@@ -833,7 +869,7 @@
             </select>
             <button id="addDishBtn">➕</button>
         </div>
-        <div class="hint">Кликни по дню в календаре — увидишь все блюда на эту дату</div>
+        <div class="hint">Кликни по дню в календаре или по строке в недельном списке — увидишь все блюда на эту дату</div>
     </div>
 </div>
 
@@ -946,51 +982,54 @@
         return week;
     }
 
-    // ——— РЕНДЕР КАЛЕНДАРЯ ———
+    // ——— РЕНДЕР КАЛЕНДАРЯ (выбор вида) ———
     function renderCalendar() {
-        const grid = document.getElementById('calendarGrid');
+        const container = document.getElementById('calendarContent');
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
 
         document.getElementById('monthTitle').textContent =
             `${['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'][month]} ${year}`;
 
-        grid.innerHTML = '';
+        container.innerHTML = '';
 
         if (currentView === 'month') {
-            const first = new Date(year, month, 1);
-            const last = new Date(year, month + 1, 0);
-            const totalDays = last.getDate();
-            let startDay = first.getDay() - 1;
-            if (startDay < 0) startDay = 6;
-
-            for (let i = 0; i < startDay; i++) {
-                const empty = document.createElement('div');
-                empty.className = 'day-cell empty';
-                grid.appendChild(empty);
-            }
-
-            const today = new Date();
-            const todayStr = today.toISOString().slice(0, 10);
-
-            for (let day = 1; day <= totalDays; day++) {
-                const d = new Date(year, month, day);
-                const dateStr = d.toISOString().slice(0, 10);
-                const cell = createDayCell(d, dateStr, todayStr);
-                grid.appendChild(cell);
-            }
+            renderMonthView(container, year, month);
         } else {
-            const week = getWeekDays(currentDate);
-            const today = new Date();
-            const todayStr = today.toISOString().slice(0, 10);
-            week.forEach(d => {
-                const dateStr = d.toISOString().slice(0, 10);
-                const cell = createDayCell(d, dateStr, todayStr);
-                grid.appendChild(cell);
-            });
+            renderWeekView(container);
         }
 
         updateFavorites();
+    }
+
+    // ——— МЕСЯЦ ———
+    function renderMonthView(container, year, month) {
+        const grid = document.createElement('div');
+        grid.className = 'days-grid';
+
+        const first = new Date(year, month, 1);
+        const last = new Date(year, month + 1, 0);
+        const totalDays = last.getDate();
+        let startDay = first.getDay() - 1;
+        if (startDay < 0) startDay = 6;
+
+        for (let i = 0; i < startDay; i++) {
+            const empty = document.createElement('div');
+            empty.className = 'day-cell empty';
+            grid.appendChild(empty);
+        }
+
+        const today = new Date();
+        const todayStr = today.toISOString().slice(0, 10);
+
+        for (let day = 1; day <= totalDays; day++) {
+            const d = new Date(year, month, day);
+            const dateStr = d.toISOString().slice(0, 10);
+            const cell = createDayCell(d, dateStr, todayStr);
+            grid.appendChild(cell);
+        }
+
+        container.appendChild(grid);
     }
 
     function createDayCell(date, dateStr, todayStr) {
@@ -1004,7 +1043,6 @@
         if (hasDone) cell.classList.add('has-done');
         if (hasPlanned) cell.classList.add('has-planned');
         if (hasDone && hasPlanned) cell.classList.add('has-both');
-
         if (dateStr === todayStr) cell.classList.add('today');
 
         const numDiv = document.createElement('div');
@@ -1012,33 +1050,69 @@
         numDiv.textContent = date.getDate();
         cell.appendChild(numDiv);
 
-        if (currentView === 'week') {
-            const chipsContainer = document.createElement('div');
-            chipsContainer.className = 'meal-chips';
-            dayDishes.forEach(dish => {
-                const chip = document.createElement('span');
-                chip.className = `meal-chip ${dish.status}`;
-                if (dish.liked) chip.classList.add('liked');
-                chip.textContent = dish.name;
-                chip.title = dish.name;
-
-                chip.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    chip.classList.toggle('expanded');
-                });
-
-                chipsContainer.appendChild(chip);
-            });
-            cell.appendChild(chipsContainer);
-        }
-
         cell.addEventListener('click', () => {
-            if (dayDishes.length > 0) {
-                openModal(dateStr);
-            }
+            if (dayDishes.length > 0) openModal(dateStr);
         });
 
         return cell;
+    }
+
+    // ——— НЕДЕЛЯ (список) ———
+    function renderWeekView(container) {
+        const week = getWeekDays(currentDate);
+        const list = document.createElement('div');
+        list.className = 'week-list';
+
+        const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+
+        week.forEach((day, idx) => {
+            const dateStr = day.toISOString().slice(0, 10);
+            const dayDishes = getDishesForDate(dateStr);
+
+            const row = document.createElement('div');
+            row.className = 'week-row';
+
+            // Колонка даты
+            const dateCol = document.createElement('div');
+            dateCol.className = 'date-col';
+            dateCol.textContent = `${day.getDate()}`;
+            row.appendChild(dateCol);
+
+            // Колонка дня недели
+            const dayCol = document.createElement('div');
+            dayCol.className = 'day-col';
+            dayCol.textContent = dayNames[idx];
+            row.appendChild(dayCol);
+
+            // Колонка с блюдами
+            const mealsCol = document.createElement('div');
+            mealsCol.className = 'meals-col';
+
+            if (dayDishes.length === 0) {
+                const empty = document.createElement('span');
+                empty.className = 'empty-meals';
+                empty.textContent = '—';
+                mealsCol.appendChild(empty);
+            } else {
+                dayDishes.forEach(dish => {
+                    const chip = document.createElement('span');
+                    chip.className = `meal-chip ${dish.status}`;
+                    if (dish.liked) chip.classList.add('liked');
+                    chip.textContent = dish.name;
+                    mealsCol.appendChild(chip);
+                });
+            }
+            row.appendChild(mealsCol);
+
+            // Клик по строке открывает модалку
+            row.addEventListener('click', () => {
+                if (dayDishes.length > 0) openModal(dateStr);
+            });
+
+            list.appendChild(row);
+        });
+
+        container.appendChild(list);
     }
 
     // ——— МОДАЛКА ДНЯ ———
@@ -1099,7 +1173,7 @@
     const choiceFromTaste = document.getElementById('choiceFromTaste');
     const choiceClose = document.getElementById('choiceClose');
 
-    document.getElementById('suggestBtn').addEventListener('click', function() {
+    document.getElementById('suggestBtn').addEventListener('click', () => {
         choiceOverlay.classList.add('active');
     });
 
@@ -1112,7 +1186,6 @@
         if (e.target === e.currentTarget) closeChoice();
     });
 
-    // Обработчик "Из моего меню"
     choiceFromMenu.addEventListener('click', function() {
         closeChoice();
         const result = suggestDish();
@@ -1123,7 +1196,6 @@
         }
     });
 
-    // Обработчик "На твой вкус"
     choiceFromTaste.addEventListener('click', function() {
         closeChoice();
         alert('✨ Функция «На твой вкус» будет доступна после загрузки ваших любимых блюд.\nЗагрузите их позже в разделе «Любимые».');
