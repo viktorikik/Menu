@@ -298,10 +298,49 @@
       filter: brightness(1.08);
     }
 
-    /* Специфические кнопки (можно переиспользовать классы) */
-    .what-cook-btn { /* используем btn-primary */ }
-    .favorites-btn { /* используем btn-secondary */ }
-    .add-dish-btn { /* используем btn-done */ }
+    .btn-export {
+      background: #8b5cf6;
+      border: none;
+      padding: var(--spacing-sm) 18px;
+      border-radius: var(--radius-lg);
+      color: white;
+      font-size: 14px;
+      font-weight: 580;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: var(--transition-fast);
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    }
+    .btn-export:hover {
+      transform: scale(1.05);
+      filter: brightness(1.08);
+    }
+
+    .btn-import {
+      background: #f59e0b;
+      border: none;
+      padding: var(--spacing-sm) 18px;
+      border-radius: var(--radius-lg);
+      color: white;
+      font-size: 14px;
+      font-weight: 580;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: var(--transition-fast);
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    }
+    .btn-import:hover {
+      transform: scale(1.05);
+      filter: brightness(1.08);
+    }
+
+    .import-hidden {
+      display: none;
+    }
 
     /* ============================================================
        6. КОМПОНЕНТ: КАЛЕНДАРЬ
@@ -1159,7 +1198,131 @@
     }
 
     /* ============================================================
-       15. АДАПТИВНОСТЬ (MOBILE-FIRST)
+       15. КОМПОНЕНТ: ПРИВЕТСТВЕННАЯ МОДАЛКА
+       ============================================================ */
+    .welcome-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--modal-overlay);
+      backdrop-filter: blur(12px);
+      z-index: 3000;
+      justify-content: center;
+      align-items: center;
+      padding: var(--spacing-lg);
+    }
+    .welcome-overlay.active {
+      display: flex;
+    }
+    .welcome-modal {
+      background: var(--modal-bg);
+      border-radius: 32px;
+      padding: 40px var(--spacing-xl) var(--spacing-xl);
+      max-width: 520px;
+      width: 100%;
+      box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--cell-border);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .welcome-modal::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 180px;
+      height: 180px;
+      background: radial-gradient(circle, var(--done-color) 0%, transparent 70%);
+      opacity: 0.15;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .welcome-modal .welcome-icon {
+      font-size: 56px;
+      margin-bottom: var(--spacing-md);
+      display: block;
+    }
+    .welcome-modal h2 {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--modal-text);
+      margin-bottom: var(--spacing-md);
+      letter-spacing: -0.5px;
+    }
+    .welcome-modal .welcome-text {
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      margin-bottom: var(--spacing-lg);
+      text-align: left;
+      padding: 0 var(--spacing-sm);
+    }
+    .welcome-modal .welcome-text strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+    .welcome-modal .welcome-features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-lg);
+      text-align: left;
+    }
+    .welcome-modal .welcome-features span {
+      font-size: 14px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      padding: 4px 0;
+    }
+    .welcome-modal .welcome-features span::before {
+      content: '✅';
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .welcome-modal .welcome-btn {
+      background: var(--btn-bg);
+      border: none;
+      padding: 14px 40px;
+      border-radius: var(--radius-lg);
+      color: var(--btn-text);
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition-fast);
+      box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.3);
+      min-width: 200px;
+    }
+    .welcome-modal .welcome-btn:hover {
+      transform: scale(1.04);
+      filter: brightness(1.12);
+    }
+    .welcome-modal .welcome-btn:active {
+      transform: scale(0.96);
+    }
+
+    @media (max-width: 480px) {
+      .welcome-modal {
+        padding: var(--spacing-lg) var(--spacing-md);
+      }
+      .welcome-modal h2 {
+        font-size: 22px;
+      }
+      .welcome-modal .welcome-features {
+        grid-template-columns: 1fr;
+      }
+      .welcome-modal .welcome-text {
+        font-size: 15px;
+      }
+    }
+
+    /* ============================================================
+       16. АДАПТИВНОСТЬ (MOBILE-FIRST)
        ============================================================ */
     /* Базовые стили уже заданы для всех устройств.
        Теперь переопределения для планшетов и десктопов */
@@ -1352,6 +1515,11 @@
         font-size: 12px;
         padding: 5px var(--spacing-md);
       }
+      .btn-export,
+      .btn-import {
+        font-size: 12px;
+        padding: 5px var(--spacing-md);
+      }
       .modal {
         padding: 16px var(--spacing-md);
         border-radius: var(--radius-md);
@@ -1415,6 +1583,9 @@
     <button class="what-cook-btn btn-primary" id="suggestBtn">🤔 Что приготовить?</button>
     <button class="favorites-btn btn-secondary" id="favoritesBtn"><span class="heart">❤️</span> Любимые</button>
     <button class="add-dish-btn btn-done" id="addDishBtn">➕ Добавить блюдо</button>
+    <button class="btn-export" id="exportBtn">📤 Экспорт</button>
+    <button class="btn-import" id="importBtn">📥 Импорт</button>
+    <input type="file" id="importFileInput" class="import-hidden" accept=".json">
   </div>
 
   <div class="calendar-wrap" id="calendarWrap">
@@ -1528,6 +1699,38 @@
   </div>
 </div>
 
+<!-- ПРИВЕТСТВЕННАЯ МОДАЛКА -->
+<div class="welcome-overlay" id="welcomeOverlay">
+  <div class="welcome-modal">
+    <span class="welcome-icon">🍽️</span>
+    <h2>Добро пожаловать в планировщик меню!</h2>
+    <div class="welcome-text">
+      <p style="margin-bottom: 12px;">
+        <strong>Привет!</strong> Я создала этот сервис для тех, кто хочет <strong>упорядочить</strong> домашнее меню, 
+        легко планировать блюда на неделю и всегда иметь под рукой любимые рецепты.
+      </p>
+      <p style="margin-bottom: 8px;">
+        Здесь ты можешь:
+      </p>
+    </div>
+    <div class="welcome-features">
+      <span>Планировать на месяц / неделю</span>
+      <span>Добавлять заметки к блюдам</span>
+      <span>Отмечать любимое ❤️</span>
+      <span>Получать рекомендации</span>
+      <span>Импорт / экспорт данных</span>
+      <span>Случайный выбор «На твой вкус»</span>
+    </div>
+    <div class="welcome-text" style="margin-bottom: var(--spacing-lg);">
+      <p style="font-size: 14px; color: var(--text-muted);">
+        Начни с добавления блюд или просто исследуй календарь. 
+        Все данные сохраняются в твоём браузере.
+      </p>
+    </div>
+    <button class="welcome-btn" id="welcomeStartBtn">🚀 Начать!</button>
+  </div>
+</div>
+
 <script>
   // ============================================================
   // 1. Утилиты
@@ -1620,6 +1823,13 @@
       { name: 'Удон', status: 'planned', date: '2026-09-10', category: 'main', note: '' },
       { name: 'Паста Болоньезе', status: 'planned', date: '2026-09-12', category: 'main', note: 'сделать с фаршем индейки' },
     ];
+
+    // Список для "На твой вкус"
+    const TASTE_DISHES = {
+      soup: ['Борщ', 'Солянка', 'Уха', 'Щи', 'Сырный суп', 'Гороховый суп', 'Рассольник', 'Окрошка'],
+      main: ['Картофельное пюре с котлетой', 'Пельмени', 'Манты', 'Гречка с мясом', 'Голубцы', 'Жаркое', 'Макароны по-флотски', 'Плов'],
+      salad: ['Селедка под шубой', 'Оливье', 'Крабовый', 'Цезарь с курицей', 'Мимоза', 'Винегрет', 'Греческий салат', 'Салат из свежих овощей']
+    };
 
     function generateId() {
       return Date.now() + Math.random() * 10000;
@@ -1770,10 +1980,30 @@
     function getFavorites() { return dishes.filter(d => d.liked); }
     function invalidateCache() { cacheUnique = null; cacheRecs = null; }
 
+    function replaceAll(newDishes) {
+      dishes = newDishes;
+      save();
+      invalidateCache();
+    }
+
+    function getTasteDishes() {
+      return TASTE_DISHES;
+    }
+
+    function getRandomDishFromTaste() {
+      const categories = ['soup', 'main', 'salad'];
+      const cat = categories[Math.floor(Math.random() * categories.length)];
+      const list = TASTE_DISHES[cat];
+      const name = list[Math.floor(Math.random() * list.length)];
+      const categoryNames = { soup: '🍲 Суп', main: '🍖 Основное', salad: '🥗 Салат' };
+      return { name, category: cat, categoryLabel: categoryNames[cat] };
+    }
+
     return {
       init, editDishName, updateNote, getAll, getForDate, addDish, removeDish,
       toggleStatus, toggleLike, getUniqueWithLastDate, getRecommendations,
-      getFavorites, invalidateCache
+      getFavorites, invalidateCache, replaceAll,
+      getTasteDishes, getRandomDishFromTaste
     };
   })();
 
@@ -2410,9 +2640,92 @@
   })();
 
   // ============================================================
-  // 4. Инициализация
+  // 4. ДОПОЛНИТЕЛЬНЫЕ ФУНКЦИИ: ЭКСПОРТ / ИМПОРТ
+  // ============================================================
+  function exportData() {
+    const data = DishStore.getAll();
+    if (!data.length) {
+      alert('Нет данных для экспорта.');
+      return;
+    }
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `menu_backup_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function importData(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const parsed = JSON.parse(e.target.result);
+        if (!Array.isArray(parsed)) {
+          alert('Некорректный файл. Ожидается массив блюд.');
+          return;
+        }
+        // Проверяем структуру (минимально)
+        if (parsed.length && (!parsed[0].name || !parsed[0].date)) {
+          alert('Файл не соответствует формату данных меню.');
+          return;
+        }
+        if (confirm(`Будет импортировано ${parsed.length} блюд. Текущие данные будут заменены. Продолжить?`)) {
+          // Нормализуем (добавляем поля, если их нет)
+          parsed.forEach(d => {
+            if (!d.category) d.category = Utils.guessCategory(d.name);
+            if (!d.note) d.note = '';
+            if (d.liked === undefined) d.liked = false;
+            if (!d.id) d.id = Date.now() + Math.random() * 10000 + Math.floor(Math.random() * 1000);
+          });
+          DishStore.replaceAll(parsed);
+          // Обновляем интерфейс
+          const view = Renderer.getCurrentView();
+          const curDate = Renderer.getCurrentDate();
+          Renderer.renderCalendar(view, curDate);
+          alert('✅ Данные успешно импортированы!');
+        }
+      } catch (err) {
+        alert('Ошибка при чтении файла: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // ============================================================
+  // 5. ПРИВЕТСТВЕННАЯ МОДАЛКА
+  // ============================================================
+  function showWelcome() {
+    const overlay = document.getElementById('welcomeOverlay');
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function hideWelcome() {
+    const overlay = document.getElementById('welcomeOverlay');
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  // ============================================================
+  // 6. ИНИЦИАЛИЗАЦИЯ
   // ============================================================
   (function init() {
+    // --- Приветственная модалка (только при первом посещении) ---
+    const welcomeSeen = localStorage.getItem('welcomeSeen');
+    if (!welcomeSeen) {
+      // Показываем после небольшой задержки, чтобы DOM успел загрузиться
+      setTimeout(showWelcome, 300);
+    }
+
+    document.getElementById('welcomeStartBtn').addEventListener('click', function() {
+      localStorage.setItem('welcomeSeen', 'true');
+      hideWelcome();
+    });
+
+    // --- Остальная инициализация ---
     DishStore.init();
 
     // Тема
@@ -2536,6 +2849,7 @@
       if (e.target === this) Renderer.closeRecModal();
     });
 
+    // "Что приготовить?"
     document.getElementById('suggestBtn').addEventListener('click', function() {
       document.getElementById('choiceOverlay').classList.add('active');
     });
@@ -2545,13 +2859,27 @@
     document.getElementById('choiceOverlay').addEventListener('click', function(e) {
       if (e.target === this) this.classList.remove('active');
     });
+
     document.getElementById('choiceFromMenu').addEventListener('click', function() {
       document.getElementById('choiceOverlay').classList.remove('active');
       Renderer.openRecommendations();
     });
+
+    // "На твой вкус" – случайное блюдо из списка
     document.getElementById('choiceFromTaste').addEventListener('click', function() {
       document.getElementById('choiceOverlay').classList.remove('active');
-      alert('✨ Функция «На твой вкус» будет доступна после загрузки ваших любимых блюд.\nЗагрузите их позже в разделе «Любимые».');
+      const random = DishStore.getRandomDishFromTaste();
+      const answer = `🍽️ ${random.categoryLabel}\n\n${random.name}\n\nХотите добавить его в план на завтра?`;
+      if (confirm(answer)) {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const dateStr = Utils.formatDateLocal(tomorrow);
+        DishStore.addDish(random.name, 'planned', dateStr, random.category, false, '');
+        const view = Renderer.getCurrentView();
+        const curDate = Renderer.getCurrentDate();
+        Renderer.renderCalendar(view, curDate);
+        alert(`✅ Блюдо "${random.name}" добавлено в план на завтра (${Utils.formatDate(tomorrow)})`);
+      }
     });
 
     document.getElementById('favoritesBtn').addEventListener('click', Renderer.openFavorites);
@@ -2585,6 +2913,18 @@
       Renderer.renderCalendar(view, curDate);
       nameInput.value = '';
       noteInput.value = '';
+    });
+
+    // Экспорт / Импорт
+    document.getElementById('exportBtn').addEventListener('click', exportData);
+    document.getElementById('importBtn').addEventListener('click', function() {
+      document.getElementById('importFileInput').click();
+    });
+    document.getElementById('importFileInput').addEventListener('change', function(e) {
+      if (this.files && this.files.length > 0) {
+        importData(this.files[0]);
+        this.value = ''; // сбросить, чтобы можно было загрузить тот же файл повторно
+      }
     });
 
     // Свайпы
@@ -2628,7 +2968,7 @@
       }
     });
 
-    console.log('✅ Готовый файл с компактными полями и заметками, CSS оптимизирован.');
+    console.log('✅ Приветственная модалка добавлена. Готово!');
   })();
 </script>
 </body>
