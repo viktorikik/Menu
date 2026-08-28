@@ -9,6 +9,7 @@
        1. ПЕРЕМЕННЫЕ
        ============================================================ */
     :root {
+      /* Цвета */
       --bg-primary: #f5f3f0;
       --bg-app: rgba(255, 255, 255, 0.8);
       --bg-app-border: rgba(255, 255, 255, 0.4);
@@ -1208,7 +1209,7 @@
     }
 
     /* ============================================================
-       16. КОМПОНЕНТ: ПРИВЕТСТВЕННАЯ МОДАЛКА
+       16. КОМПОНЕНТ: ПРИВЕТСТВЕННАЯ МОДАЛКА (уменьшенная, компактная)
        ============================================================ */
     .welcome-overlay {
       display: none;
@@ -1218,58 +1219,54 @@
       right: 0;
       bottom: 0;
       background: var(--modal-overlay);
-      backdrop-filter: blur(12px);
+      backdrop-filter: blur(8px);
       z-index: 3000;
       justify-content: center;
       align-items: center;
-      padding: var(--spacing-lg);
+      padding: var(--spacing-md);
     }
     .welcome-overlay.active {
       display: flex;
     }
     .welcome-modal {
       background: var(--modal-bg);
-      border-radius: 32px;
-      padding: 40px var(--spacing-xl) var(--spacing-xl);
-      max-width: 520px;
+      border-radius: 24px;
+      padding: var(--spacing-lg) var(--spacing-md);
+      max-width: 440px;
       width: 100%;
-      box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
       border: 1px solid var(--cell-border);
       text-align: center;
       position: relative;
-      overflow: hidden;
     }
+    /* убираем большой декоративный элемент */
     .welcome-modal::before {
-      content: '';
-      position: absolute;
-      top: -60px;
-      right: -60px;
-      width: 180px;
-      height: 180px;
-      background: radial-gradient(circle, var(--done-color) 0%, transparent 70%);
-      opacity: 0.15;
-      border-radius: 50%;
-      pointer-events: none;
+      display: none;
     }
     .welcome-modal .welcome-icon {
-      font-size: 56px;
-      margin-bottom: var(--spacing-md);
+      font-size: 36px;
+      margin-bottom: var(--spacing-xs);
       display: block;
     }
     .welcome-modal h2 {
-      font-size: 26px;
+      font-size: 20px;
       font-weight: 700;
       color: var(--modal-text);
-      margin-bottom: var(--spacing-md);
-      letter-spacing: -0.5px;
+      margin-bottom: var(--spacing-sm);
+      letter-spacing: -0.3px;
     }
     .welcome-modal .welcome-text {
-      font-size: 16px;
-      line-height: 1.6;
+      font-size: 14px;
+      line-height: 1.5;
       color: var(--text-secondary);
-      margin-bottom: var(--spacing-lg);
+      margin-bottom: var(--spacing-md);
       text-align: left;
-      padding: 0 var(--spacing-sm);
+      padding: 0;
+    }
+    .welcome-modal .welcome-text p {
+      margin-bottom: 6px;
     }
     .welcome-modal .welcome-text strong {
       color: var(--text-primary);
@@ -1278,35 +1275,36 @@
     .welcome-modal .welcome-features {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: var(--spacing-sm);
-      margin-bottom: var(--spacing-lg);
+      gap: var(--spacing-xs);
+      margin-bottom: var(--spacing-md);
       text-align: left;
     }
     .welcome-modal .welcome-features span {
-      font-size: 14px;
+      font-size: 13px;
       color: var(--text-secondary);
       display: flex;
       align-items: center;
       gap: var(--spacing-xs);
-      padding: 4px 0;
+      padding: 2px 0;
     }
     .welcome-modal .welcome-features span::before {
       content: '✅';
-      font-size: 16px;
+      font-size: 14px;
       flex-shrink: 0;
     }
     .welcome-modal .welcome-btn {
       background: var(--btn-bg);
       border: none;
-      padding: 14px 40px;
+      padding: 10px 32px;
       border-radius: var(--radius-lg);
       color: var(--btn-text);
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 600;
       cursor: pointer;
       transition: var(--transition-fast);
-      box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.3);
-      min-width: 200px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      min-width: 160px;
+      margin-top: var(--spacing-sm);
     }
     .welcome-modal .welcome-btn:hover {
       transform: scale(1.04);
@@ -1318,16 +1316,22 @@
 
     @media (max-width: 480px) {
       .welcome-modal {
-        padding: var(--spacing-lg) var(--spacing-md);
+        padding: var(--spacing-md) var(--spacing-sm);
+        max-width: 100%;
       }
       .welcome-modal h2 {
-        font-size: 22px;
+        font-size: 18px;
       }
       .welcome-modal .welcome-features {
         grid-template-columns: 1fr;
       }
       .welcome-modal .welcome-text {
+        font-size: 13px;
+      }
+      .welcome-modal .welcome-btn {
         font-size: 15px;
+        padding: 8px 24px;
+        min-width: 140px;
       }
     }
 
@@ -1704,33 +1708,21 @@
   </div>
 </div>
 
-<!-- ПРИВЕТСТВЕННАЯ МОДАЛКА -->
+<!-- ПРИВЕТСТВЕННАЯ МОДАЛКА (уменьшенная) -->
 <div class="welcome-overlay" id="welcomeOverlay">
   <div class="welcome-modal">
     <span class="welcome-icon">🍽️</span>
-    <h2>Добро пожаловать в планировщик меню!</h2>
+    <h2>Добро пожаловать!</h2>
     <div class="welcome-text">
-      <p style="margin-bottom: 12px;">
-        <strong>Привет!</strong> Я создала этот сервис для тех, кто хочет <strong>упорядочить</strong> домашнее меню, 
-        легко планировать блюда на неделю и всегда иметь под рукой любимые рецепты.
-      </p>
-      <p style="margin-bottom: 8px;">
-        Здесь ты можешь:
-      </p>
+      <p><strong>Привет!</strong> Этот планировщик поможет тебе структурировать домашнее меню, планировать блюда и всегда иметь под рукой любимые рецепты.</p>
     </div>
     <div class="welcome-features">
       <span>Планировать на месяц / неделю</span>
-      <span>Добавлять заметки к блюдам</span>
+      <span>Заметки к блюдам</span>
       <span>Отмечать любимое ❤️</span>
-      <span>Получать рекомендации</span>
-      <span>Импорт / экспорт данных</span>
-      <span>Случайный выбор «На твой вкус»</span>
-    </div>
-    <div class="welcome-text" style="margin-bottom: var(--spacing-lg);">
-      <p style="font-size: 14px; color: var(--text-muted);">
-        Начни с добавления блюд или просто исследуй календарь. 
-        Все данные сохраняются в твоём браузере.
-      </p>
+      <span>Рекомендации</span>
+      <span>Импорт / экспорт</span>
+      <span>«На твой вкус»</span>
     </div>
     <button class="welcome-btn" id="welcomeStartBtn">🚀 Начать!</button>
   </div>
@@ -1978,7 +1970,6 @@
       return result;
     }
 
-    // Для модалки дня используем только готовленные (старый метод) – оставляем для совместимости
     function getUniqueWithLastDate() {
       if (cacheUnique) return cacheUnique;
       const map = {};
@@ -2443,7 +2434,7 @@
 
       addSection.appendChild(addForm);
 
-      // Предложения – используем все уникальные блюда с информацией о последнем приготовлении
+      // Предложения
       const suggestTitle = document.createElement('h4');
       suggestTitle.textContent = '📖 Выбрать из меню';
       suggestTitle.style.marginTop = '12px';
@@ -2452,7 +2443,7 @@
       const suggestList = document.createElement('div');
       suggestList.className = 'modal-suggest-list';
       suggestList.id = 'modalSuggestList';
-      const allUnique = DishStore.getAllUniqueWithLastDone(); // все блюда, с lastDoneDate или null
+      const allUnique = DishStore.getAllUniqueWithLastDone();
       const existingNames = dayDishes.map(d => d.name);
       const available = allUnique.filter(item => !existingNames.includes(item.name));
       if (available.length === 0) {
@@ -3066,7 +3057,7 @@
       }
     });
 
-    console.log('✅ Все доработки внесены: список предложений показывает все блюда с указанием «ещё не готовили», редактирование заметок работает.');
+    console.log('✅ Приветственная модалка уменьшена и адаптирована.');
   })();
 </script>
 </body>
