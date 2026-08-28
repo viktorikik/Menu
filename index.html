@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-  <title>Меню · Календарь</title>
+  <title>Планировщик меню · Календарь</title>
   <style>
     /* ============================================================
        1. ПЕРЕМЕННЫЕ
@@ -144,11 +144,11 @@
     }
 
     /* ============================================================
-       4. КОМПОНЕНТ: ШАПКА (HEADER)
+       4. КОМПОНЕНТ: ШАПКА (HEADER) – теперь по центру
        ============================================================ */
     .header {
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       align-items: center;
       flex-wrap: wrap;
       gap: var(--spacing-md);
@@ -160,15 +160,7 @@
       font-weight: 620;
       letter-spacing: -0.3px;
       color: var(--text-primary);
-    }
-    .logo h1 span {
-      font-size: 13px;
-      color: var(--text-muted);
-      background: var(--badge-bg);
-      padding: 3px var(--spacing-md);
-      border-radius: var(--radius-lg);
-      margin-left: var(--spacing-sm);
-      font-weight: 400;
+      margin: 0;
     }
 
     .controls {
@@ -914,6 +906,7 @@
       margin-bottom: 14px;
     }
 
+    /* Общие стили для полей */
     .modal-field-input,
     .modal-field-select {
       padding: var(--input-padding);
@@ -923,10 +916,6 @@
       font-size: 13px;
       color: var(--text-primary);
       outline: none;
-      flex: 0 0 auto;
-      min-width: 80px;
-      max-width: 160px;
-      width: auto;
       transition: var(--transition-fast);
     }
     .modal-field-input:focus,
@@ -935,7 +924,23 @@
       box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15);
     }
 
-    .modal-field-btn {
+    /* Поля на всю ширину (Название, Заметка) */
+    .modal-add-new .field-full {
+      flex: 1 1 100%;
+      max-width: 100%;
+      width: 100%;
+    }
+
+    /* Поля по 50% (Статус, Категория) */
+    .modal-add-new .field-half {
+      flex: 0 0 calc(50% - 6px);
+      max-width: calc(50% - 6px);
+      width: auto;
+    }
+
+    /* Кнопка по центру */
+    .modal-add-new .field-btn {
+      flex: 0 0 auto;
       padding: var(--btn-padding);
       border-radius: var(--radius-lg);
       border: none;
@@ -944,10 +949,10 @@
       font-weight: 550;
       font-size: 13px;
       cursor: pointer;
-      flex: 0 0 auto;
       transition: var(--transition-fast);
+      margin: 0 auto;
     }
-    .modal-field-btn:hover {
+    .modal-add-new .field-btn:hover {
       filter: brightness(1.12);
     }
 
@@ -1331,11 +1336,11 @@
     @media (min-width: 480px) {
       .modal-field-input,
       .modal-field-select {
-        max-width: 140px;
         font-size: 13px;
       }
-      .modal-field-btn {
-        font-size: 13px;
+      .modal-add-new .field-half {
+        flex: 0 0 calc(50% - 8px);
+        max-width: calc(50% - 8px);
       }
       .modal-add-new {
         gap: var(--spacing-md);
@@ -1357,16 +1362,14 @@
       }
       .header {
         flex-direction: row;
+        justify-content: center;
       }
       .controls {
-        justify-content: flex-end;
+        justify-content: center;
       }
       .logo h1 {
         font-size: 24px;
-        text-align: left;
-      }
-      .logo h1 span {
-        display: inline-block;
+        text-align: center;
       }
       .what-cook-btn {
         font-size: 16px;
@@ -1408,12 +1411,9 @@
         flex-wrap: wrap;
         justify-content: flex-start;
       }
-      .modal-add-new .modal-field-input,
-      .modal-add-new .modal-field-select,
-      .modal-add-new .modal-field-btn {
-        max-width: 160px;
-        width: auto;
-        flex: 0 0 auto;
+      .modal-add-new .field-half {
+        flex: 0 0 calc(50% - 8px);
+        max-width: calc(50% - 8px);
       }
       .rec-modal .modal {
         max-width: 480px;
@@ -1458,9 +1458,9 @@
       .day-number {
         font-size: 16px;
       }
-      .modal-field-input,
-      .modal-field-select {
-        max-width: 180px;
+      .modal-add-new .field-half {
+        flex: 0 0 calc(50% - 10px);
+        max-width: calc(50% - 10px);
       }
     }
 
@@ -1551,14 +1551,17 @@
         font-size: 13px;
         padding: 6px 10px;
       }
-      .modal-add-new .modal-field-input,
-      .modal-add-new .modal-field-select,
-      .modal-add-new .modal-field-btn {
-        max-width: 120px;
+      .modal-add-new .field-half {
+        flex: 0 0 100%;
+        max-width: 100%;
+      }
+      .modal-field-input,
+      .modal-field-select {
         font-size: 12px;
       }
-      .modal-add-new .modal-field-input {
-        min-width: 70px;
+      .modal-add-new .field-btn {
+        font-size: 12px;
+        padding: 6px 16px;
       }
     }
   </style>
@@ -1568,7 +1571,7 @@
 <div class="app">
   <div class="header">
     <div class="logo">
-      <h1>🍽️ Меню <span>планировщик</span></h1>
+      <h1>🍽️ Планировщик меню</h1>
     </div>
     <div class="controls">
       <button class="theme-toggle" id="themeToggle" title="Переключить тему">🌓</button>
@@ -2364,23 +2367,26 @@
       const addForm = document.createElement('div');
       addForm.className = 'modal-add-new';
 
+      // Поле "Название" – на всю ширину
       const nameInput = document.createElement('input');
       nameInput.type = 'text';
       nameInput.placeholder = 'Название';
       nameInput.id = 'modalNewDishName';
-      nameInput.className = 'modal-field-input';
+      nameInput.className = 'modal-field-input field-full';
       addForm.appendChild(nameInput);
 
+      // Поле "Заметка" – на всю ширину
       const noteInput = document.createElement('input');
       noteInput.type = 'text';
       noteInput.placeholder = '📝 Заметка (рецепт, продукты…)';
       noteInput.id = 'modalNewDishNote';
-      noteInput.className = 'modal-field-input';
+      noteInput.className = 'modal-field-input field-full';
       addForm.appendChild(noteInput);
 
+      // Поле "Статус" – половина ширины
       const statusSelect = document.createElement('select');
       statusSelect.id = 'modalNewDishStatus';
-      statusSelect.className = 'modal-field-select';
+      statusSelect.className = 'modal-field-select field-half';
       ['planned','done'].forEach(val => {
         const opt = document.createElement('option');
         opt.value = val;
@@ -2389,9 +2395,10 @@
       });
       addForm.appendChild(statusSelect);
 
+      // Поле "Категория" – половина ширины
       const categorySelect = document.createElement('select');
       categorySelect.id = 'modalNewDishCategory';
-      categorySelect.className = 'modal-field-select';
+      categorySelect.className = 'modal-field-select field-half';
       [
         { val: 'soup', label: '🍲 Суп' },
         { val: 'salad', label: '🥗 Салат' },
@@ -2405,10 +2412,12 @@
       });
       addForm.appendChild(categorySelect);
 
+      // Кнопка "Добавить" – по центру
       const addBtn = document.createElement('button');
       addBtn.textContent = 'Добавить';
-      addBtn.className = 'modal-field-btn';
+      addBtn.className = 'field-btn';
       addForm.appendChild(addBtn);
+
       addSection.appendChild(addForm);
 
       // Предложения
@@ -2970,7 +2979,7 @@
       }
     });
 
-    console.log('✅ Приветственная модалка всегда показывается для теста. Функция "На твой вкус" работает.');
+    console.log('✅ Все исправления применены: центрирование, название, поля в модалке.');
   })();
 </script>
 </body>
