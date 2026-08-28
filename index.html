@@ -9,7 +9,6 @@
        1. ПЕРЕМЕННЫЕ
        ============================================================ */
     :root {
-      /* Цвета */
       --bg-primary: #f5f3f0;
       --bg-app: rgba(255, 255, 255, 0.8);
       --bg-app-border: rgba(255, 255, 255, 0.4);
@@ -1759,6 +1758,7 @@
       return `${y}-${m}-${d}`;
     },
     daysAgo(dateStr) {
+      if (!dateStr) return null;
       const today = new Date();
       const d = new Date(dateStr);
       const diff = Math.floor((today - d) / (1000 * 60 * 60 * 24));
@@ -1809,7 +1809,7 @@
     let dishes = [];
     let cacheUnique = null;
     let cacheRecs = null;
-    let cacheUniqueDone = null;
+    let cacheAllWithDone = null;
 
     const DEFAULT_DISHES = [
       { name: 'Гороховый суп', status: 'done', date: '2026-08-24', category: 'soup', note: '' },
@@ -1872,7 +1872,7 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify(dishes));
         cacheUnique = null;
         cacheRecs = null;
-        cacheUniqueDone = null;
+        cacheAllWithDone = null;
       } catch (e) { console.error('Ошибка сохранения данных:', e); }
     }
 
@@ -1954,24 +1954,31 @@
       return true;
     }
 
-    // Для списка предложений в модалке дня – только последняя дата среди 'done'
-    function getUniqueWithLastDoneDate() {
-      if (cacheUniqueDone) return cacheUniqueDone;
-      const map = {};
-      // Фильтруем только done
-      const doneDishes = dishes.filter(d => d.status === 'done');
-      doneDishes.forEach(d => {
-        if (!map[d.name] || d.date > map[d.name]) {
-          map[d.name] = d.date;
+    // Все уникальные блюда с информацией о последнем приготовлении (status = done)
+    function getAllUniqueWithLastDone() {
+      if (cacheAllWithDone) return cacheAllWithDone;
+      const names = new Set(dishes.map(d => d.name));
+      const result = [];
+      names.forEach(name => {
+        const doneEntries = dishes.filter(d => d.name === name && d.status === 'done');
+        let lastDoneDate = null;
+        if (doneEntries.length > 0) {
+          lastDoneDate = doneEntries.reduce((max, d) => d.date > max ? d.date : max, doneEntries[0].date);
         }
+        result.push({ name, lastDoneDate });
       });
-      const result = Object.entries(map).map(([name, lastDate]) => ({ name, lastDate }));
-      result.sort((a, b) => a.lastDate.localeCompare(b.lastDate));
-      cacheUniqueDone = result;
+      // Сортируем: сначала те, у которых есть дата (по дате), затем без даты (в алфавитном порядке)
+      result.sort((a, b) => {
+        if (a.lastDoneDate && b.lastDoneDate) return a.lastDoneDate.localeCompare(b.lastDoneDate);
+        if (a.lastDoneDate && !b.lastDoneDate) return -1;
+        if (!a.lastDoneDate && b.lastDoneDate) return 1;
+        return a.name.localeCompare(b.name);
+      });
+      cacheAllWithDone = result;
       return result;
     }
 
-    // Для предложений вне модалки (ранее использовалось) – оставляем для совместимости
+    // Для модалки дня используем только готовленные (старый метод) – оставляем для совместимости
     function getUniqueWithLastDate() {
       if (cacheUnique) return cacheUnique;
       const map = {};
@@ -2006,7 +2013,7 @@
     }
 
     function getFavorites() { return dishes.filter(d => d.liked); }
-    function invalidateCache() { cacheUnique = null; cacheRecs = null; cacheUniqueDone = null; }
+    function invalidateCache() { cacheUnique = null; cacheRecs = null; cacheAllWithDone = null; }
 
     function replaceAll(newDishes) {
       dishes = newDishes;
@@ -2026,7 +2033,7 @@
 
     return {
       init, editDishName, updateNote, getAll, getForDate, addDish, removeDish,
-      toggleStatus, toggleLike, getUniqueWithLastDate, getUniqueWithLastDoneDate,
+      toggleStatus, toggleLike, getUniqueWithLastDate, getAllUniqueWithLastDone,
       getRecommendations, getFavorites, invalidateCache, replaceAll,
       getTasteDishes, getRandomDishFromTaste
     };
@@ -2436,7 +2443,7 @@
 
       addSection.appendChild(addForm);
 
-      // Предложения – используем getUniqueWithLastDoneDate
+      // Предложения – используем все уникальные блюда с информацией о последнем приготовлении
       const suggestTitle = document.createElement('h4');
       suggestTitle.textContent = '📖 Выбрать из меню';
       suggestTitle.style.marginTop = '12px';
@@ -2445,13 +2452,13 @@
       const suggestList = document.createElement('div');
       suggestList.className = 'modal-suggest-list';
       suggestList.id = 'modalSuggestList';
-      const uniqueDishes = DishStore.getUniqueWithLastDoneDate(); // только done
+      const allUnique = DishStore.getAllUniqueWithLastDone(); // все блюда, с lastDoneDate или null
       const existingNames = dayDishes.map(d => d.name);
-      const available = uniqueDishes.filter(item => !existingNames.includes(item.name));
+      const available = allUnique.filter(item => !existingNames.includes(item.name));
       if (available.length === 0) {
         const noSuggest = document.createElement('div');
         noSuggest.className = 'modal-no-suggest';
-        noSuggest.textContent = 'Нет блюд, которые вы уже готовили и не добавили на этот день';
+        noSuggest.textContent = 'Все блюда уже добавлены на этот день';
         suggestList.appendChild(noSuggest);
       } else {
         available.forEach(item => {
@@ -2464,9 +2471,8 @@
           suggestItem.appendChild(nameSpan);
           const lastSpan = document.createElement('span');
           lastSpan.className = 'suggest-last';
-          // Если есть дата последнего приготовления
-          if (item.lastDate) {
-            lastSpan.textContent = `Последний раз: ${Utils.daysAgo(item.lastDate)}`;
+          if (item.lastDoneDate) {
+            lastSpan.textContent = `Последний раз: ${Utils.daysAgo(item.lastDoneDate)}`;
           } else {
             lastSpan.textContent = 'ещё не готовили';
           }
@@ -2721,7 +2727,6 @@
       a.click();
       URL.revokeObjectURL(url);
     } else if (format === 'csv') {
-      // Заголовки
       const headers = ['Название', 'Статус', 'Дата', 'Категория', 'Заметка', 'Любимое'];
       const rows = data.map(d => [
         d.name,
@@ -3061,7 +3066,7 @@
       }
     });
 
-    console.log('✅ Все доработки внесены: дата приготовления, выравнивание кнопок, экспорт с выбором формата, подсказка импорта.');
+    console.log('✅ Все доработки внесены: список предложений показывает все блюда с указанием «ещё не готовили», редактирование заметок работает.');
   })();
 </script>
 </body>
